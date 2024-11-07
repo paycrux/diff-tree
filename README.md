@@ -1,89 +1,178 @@
-# git-diff-analyzer
+# diff-rettier (이름은 변경될 수 있음)
 
-프론트엔드 KSNET 배포가 행복해지는 그날을 위해...
+A CLI tool for analyzing and visualizing differences between branches, tags, and commits. 
+Especially useful for managing code synchronization in projects with delayed deployments.
 
-## 주요 기능
+## Key Features
 
-- 브랜치, 태그, 커밋 간 차이점 분석
-- 파일 타입별 변경사항 통계
-- 대화형 모드
-- 변경 이력 분석
-- 자동으로 변경점을 넣어주는.. 기능을 만들고 싶다... 🥲
+- 🔍 **Diff Analysis**: Analyze differences between branches, tags, and commits
+- 📊 **Multiple Visualizations**: View results in various formats including Tree, Plain, and JSON
+- 🌳 **Folder Structure Visualization**: Display changes hierarchically according to folder structure
+- 💡 **Interactive Interface**: Step-by-step analysis through an intuitive CLI
+- 🎯 **Pattern-based Filtering**: Selective analysis of specific files or directories
 
 ## Installation
 
-1. Clone the repository
+### Local Install
 
+1. Clone this repository
 ```bash
-git clone git@github.com:paycrux/frontend-autocat.git
+git clone
 cd git-diff-analyzer
 ```
 
 2. Install dependencies
-
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
-3. Build the project
-
+3. Build
 ```bash
-pnpm build
+pnpm run build
 ```
 
-4. Link the package globally (패키지로 배포하지 않은 상태이므로 로컬에서 global link해주세요)
-
+4. Link
 ```bash
 pnpm link --global
 ```
 
+### Coming Soon...
+(NPM publication planned)
+```bash
+npm install -g git-diff-analyzer
+# or
+yarn global add git-diff-analyzer
+# or
+pnpm add -g git-diff-analyzer
+```
+
 ## Usage
 
-패키지를 전역으로 연결한 후에는 어느 디렉토리에서나 사용할 수 있습니다:
+### Basic Commands
 
 ```bash
-git-diff-analyzer [options]
+# Run in interactive mode
+git-diff-analyzer compare -i
 
-Usage: git-diff-analyzer [options] [command]
+# Specify references directly
+git-diff-analyzer compare -f  -t 
 
-Options:
-  -V, --version      output the version number
-  -h, --help         display help for command
-
-Commands:
-  analyze [options]  Analyze differences between git references
-  help [command]     display help for command
+# Filter files by pattern
+git-diff-analyzer compare -f main -t develop -p "src/**/*.ts"
 ```
 
-For example:
+### Output Format Options
 
 ```bash
-$ git-diff-analyzer analyze -i
-✔ Enter the starting reference: master:apps/@bankpos/
-✔ Enter the ending reference: master:apps/@ksnet
-✔ Do you want to filter files by pattern? yes
-✔ Enter file pattern (e.g., "*.ts"): src/*
-✔ Analysis complete
+# Tree view (default)
+git-diff-analyzer compare -f main -t develop --format tree
+
+# Plain text
+git-diff-analyzer compare -f main -t develop --format plain
+
+# JSON format
+git-diff-analyzer compare -f main -t develop --format json
 ```
 
-<img width="578" alt="스크린샷 2024-11-07 오전 10 54 54" src="https://github.com/user-attachments/assets/04e406d0-cf21-486a-a467-b2d7858b072d">
+### Command Options
 
-안녕하세요. 새로운 기능을 만들어보고 싶습니다.
+| Option | Description |
+|--------|-------------|
+|`-i, --interactive`|Run in interactive mode |
+|`-f, --from <ref>`|Starting reference (branch/tag/commit) |
+|`-t, --to <ref>`|Ending reference (branch/tag/commit) |
+|`-p, --pattern <pattern>`|File filtering pattern |
+|`--format <type>`|Output format (tree/plain/json) |
+|`--no-colors`|Disable colored output |
+|`--no-icons`|Disable icons in display |
 
-cli tool을 개발하고 있고 기존에 사용하던 저의 output은 이렇게 생겼습니다. (첨부파일 확인)
+## Usage Examples
 
-하지만, 사용하는 입장에서 어떤 폴더에서 얼만큼 바뀌었는지 확인이 어렵다고 하여 table내에서도 폴더구조가 잘 보이게끔 수정하고 싶습니다.
+### Code Synchronization Analysis in Monorepo
 
-어떻게 하면 사용자가 더 잘 사용할 수 있을까요?
+1. Analyzing differences between main project and delayed deployment project:
+```bash
+git-diff-analyzer compare -f main-proj:v1.0.0 -t delayed-proj:v1.0.0
+```
 
-우선, 이 프로덕트의 목적을 안내해드리겠습니다.
+2. Check changes in specific directory:
+```bash
+git-diff-analyzer compare -i
+# Specify directory pattern in interactive mode: "apps/specific-app/**"
+```
 
-- Git diff 분석기 CLI 인터페이스 구현
+### Output Example
 
-왜 만드는가?
+```
+╔══════════════════════╤═════════════╤══════════╗
+║ Path                 │ Type        │ Changes  ║
+╟──────────────────────┼─────────────┼──────────╢
+║ 📁 src               │             │ +457/-87 ║
+║   📁 components      │             │ +315/-81 ║
+║     📄 Button.tsx    │ 📝 modified │ +30/-10  ║
+║     📄 Input.tsx     │ ✨ added    │ +45      ║
+╚══════════════════════╧═════════════╧══════════╝
+```
 
-- 모노레포 환경에서의 배포 프로세스 개선 방안
-- VD/BankPOS와 KSNET 프로젝트 간의 코드 동기화 이슈
-- 모노레포 환경에서 VD/BankPOS는 동시 배포되며, KSNET은 1-2개월 지연 배포됨
-- Git diff 분석 도구를 통해 태그 간 변경사항을 체계적으로 분석하고, KSNET에 반영할 변경사항을 추출하고자 함
-- 추후 변경사항에 대한 자동화까지 생각하고 있으며, 전체 자동화는 위험할 수 있으니 하나의 파일별로 변경사항을 추출하여 적용시키고, 사용자가 직접 확인하고 적용할 수 있도록 하는 것이 목표
+## Important Notes
+
+- Must be run within a Git repository
+- Analysis may take time in large repositories
+- Filter patterns support regular expressions
+
+## 내가 안잊어버리려고 적는 구조
+```mermaid
+graph TB
+    CLI["CLI (Entry Point)"]
+    CMD["Commander
+    (Command Parser)"]
+    IC["InteractiveCommand"]
+    DC["DirectCommand"]
+    CTX["CommandContext"]
+    STORE["Store
+    (State Management)"]
+    EMIT["EventEmitter"]
+    ROUTE["RouteManager"]
+    GIT["GitAnalyzer"]
+    FORM["DiffFormatter"]
+    
+    CLI --> CMD
+    CMD --> IC
+    CMD --> DC
+    
+    IC --> CTX
+    DC --> CTX
+    
+    CTX --> STORE
+    CTX --> EMIT
+    CTX --> GIT
+    CTX --> FORM
+    
+    IC --> ROUTE
+    ROUTE --> CTX
+    
+    subgraph Formatters
+        FORM --> TREE["TreeFormatter"]
+        FORM --> PLAIN["PlainFormatter"]
+        FORM --> JSON["JSONFormatter"]
+    end
+    
+    subgraph State Management
+        STORE --> STATE["AppState
+        - Analysis
+        - UI State"]
+    end
+    
+    subgraph Git Operations
+        GIT --> EXEC["Git Command
+        Executor"]
+        GIT --> PARSE["Diff Parser"]
+        GIT --> ANAL["Analysis
+        Generator"]
+    end
+
+    style CLI fill:#f9f,stroke:#333,stroke-width:4px
+    style CTX fill:#bbf,stroke:#333,stroke-width:2px
+    style STORE fill:#bfb,stroke:#333,stroke-width:2px
+    style GIT fill:#fbb,stroke:#333,stroke-width:2px
+```
