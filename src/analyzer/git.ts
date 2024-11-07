@@ -6,7 +6,7 @@ import {
   ErrorTypes,
   FileChange,
   GitDiffError,
-  GitDiffOptions,
+  CompareOptions,
 } from "../types/index.js";
 import path from "path";
 
@@ -135,11 +135,11 @@ export class GitAnalyzer {
   /**
    * Git diff 분석 수행
    * @public
-   * @param {GitDiffOptions} options - diff 분석 옵션
+   * @param {CompareOptions} options - diff 분석 옵션
    * @returns {Promise<DiffAnalysis>} 분석 결과
    * @throws {GitDiffError} 분석 실패시
    */
-  public async analyzeDiff(options: GitDiffOptions): Promise<DiffAnalysis> {
+  public async analyzeDiff(options: CompareOptions): Promise<DiffAnalysis> {
     const { fromRef, toRef, filterPattern, includeMergeCommits } = options;
 
     // 레퍼런스 유효성 검사

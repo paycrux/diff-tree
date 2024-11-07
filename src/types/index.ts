@@ -10,9 +10,9 @@ export enum ChangeType {
 
 /**
  * Git diff 분석을 위한 옵션 인터페이스
- * @interface GitDiffOptions
+ * @interface CompareOptions
  */
-export interface GitDiffOptions {
+export interface CompareOptions {
   /** 비교 시작 레퍼런스 (커밋 해시, 태그, 브랜치명) */
   fromRef: string;
   /** 비교 종료 레퍼런스 (커밋 해시, 태그, 브랜치명) */
@@ -122,6 +122,8 @@ export const ErrorTypes = {
   INVALID_FILTER_PATTERN: "INVALID_FILTER_PATTERN",
   /** CLI option 오류 **/
   INVALID_CLI_OPTIONS: "INVALID_CLI_OPTIONS",
+  /** 분석 결과 없음 */
+  NO_ANALYSIS_AVAILABLE: "NO_ANALYSIS_AVAILABLE",
 } as const;
 
 /**
@@ -146,4 +148,8 @@ export class GitDiffError extends Error {
     this.type = type;
     this.details = details;
   }
+}
+
+export interface GitCommand {
+  execute(): Promise<void>;
 }

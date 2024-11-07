@@ -9,10 +9,9 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsc --watch",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "test": "vitest"
+    "start": "node dist/index.js"
   },
   "exports": {
     ".": {

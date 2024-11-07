@@ -6,5 +6,5 @@ export const PROMPT_CONFIG = {
 
 export const validators = {
   nonEmpty: (input: string): boolean | string =>
-    input.length > 0 || "Input cannot be empty",
+    input.trim().length > 0 || "Input cannot be empty",
 };

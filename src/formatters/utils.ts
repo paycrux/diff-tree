@@ -76,7 +76,7 @@ export function getChangeIcon(type: string): string {
     dir: "📁",
     file: "📄",
     modified: "📝",
-    deleted: "🗑️",
+    deleted: "❌",
     renamed: "🔄",
     added: "✨",
     warning: "🚨",

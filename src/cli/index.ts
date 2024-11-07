@@ -1,22 +1,22 @@
 // src/cli/index.ts
 import { Command } from "commander";
 import chalk from "chalk";
-import ora from "ora";
 import { GitAnalyzer } from "../analyzer/git.js";
 import { GitDiffError } from "../types/index.js";
-import {
-  getCommitCompareAnswers,
-  getDirectoryCompareAnswers,
-  getFormatSelection,
-  getModeSelection,
-  getPatternAnswers,
-} from "./prompt.js";
 import { DiffFormatter } from "../formatters/index.js";
+import { CommandContext } from "./context/index.js";
+import { InteractiveCompareCommand } from "./commands/interactiveCommand.js";
+import { DirectCompareCommand } from "./commands/compareCommand.js";
 
 export class CLI {
   private program: Command;
-  private analyzer: GitAnalyzer;
-  private formatter: DiffFormatter;
+  private context: CommandContext;
+
+  constructor() {
+    this.program = new Command();
+    this.context = new CommandContext(new GitAnalyzer(), new DiffFormatter());
+    this.setupCommands();
+  }
 
   private setupCommands(): void {
     this.program
@@ -39,82 +39,23 @@ export class CLI {
       .option("--no-icons", "Disable icons in tree view")
       .action(async (options) => {
         try {
-          if (options.interactive || (!options.from && !options.to))
-            await this.runInteractiveMode();
-          else await this.runDirectMode(options);
+          const command = this.createCommand(options);
+          await command.execute();
         } catch (error: any) {
-          this.handleError(error);
+          await this.handleError(error);
         }
       });
   }
 
-  constructor() {
-    this.program = new Command();
-    this.analyzer = new GitAnalyzer();
-    this.formatter = new DiffFormatter();
-    this.setupCommands();
-  }
+  private createCommand(options: any) {
+    if (options.interactive) return new InteractiveCompareCommand(this.context);
 
-  private async runInteractiveMode() {
-    const modeAnswer = await getModeSelection();
-    const formatAnswer = await getFormatSelection();
-
-    this.formatter.updateOptions({ format: formatAnswer.format });
-
-    let answers;
-
-    if (modeAnswer.compareMode === "commits") {
-      answers = await getCommitCompareAnswers();
-    } else {
-      answers = await getDirectoryCompareAnswers();
-    }
-
-    const patternAnswers = await getPatternAnswers();
-
-    const spinner = ora("Analyzing differences...").start();
-
-    try {
-      const analysis = await this.analyzer.analyzeDiff({
-        fromRef: answers.fromRef,
-        toRef: answers.toRef,
-        filterPattern: patternAnswers.pattern,
-      });
-
-      spinner.succeed("Analysis complete");
-      this.displayResults(analysis);
-    } catch (error) {
-      spinner.fail("Analysis failed");
-      throw error;
-    }
-  }
-
-  private async runDirectMode(options: any): Promise<void> {
-    if (!options.from || !options.to) {
-      throw new Error(
-        "Both --from and --to references are required in direct mode"
-      );
-    }
-
-    const spinner = ora("Analyzing differences...").start();
-
-    try {
-      const analysis = await this.analyzer.analyzeDiff({
-        fromRef: options.from,
-        toRef: options.to,
-        filterPattern: options.pattern,
-      });
-
-      spinner.succeed("Analysis complete");
-      this.displayResults(analysis);
-    } catch (error) {
-      spinner.fail("Analysis failed");
-      throw error;
-    }
-  }
-
-  private displayResults(analysis: any): void {
-    const output = this.formatter.format(analysis);
-    console.log(output);
+    return new DirectCompareCommand(this.context, {
+      toRef: options.to,
+      fromRef: options.from,
+      filterPattern: options.pattern,
+      includeMergeCommits: options.includeMergeCommits,
+    });
   }
 
   private async handleError(error: GitDiffError | Error): Promise<void> {
