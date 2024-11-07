@@ -49,30 +49,29 @@ pnpm add -g diff-rettier
 ## Usage
 
 ### Basic Commands
-prettier
 
 ```bash
 # Run in interactive mode
-git diff-reittier compare -i
+git diff-rettier compare -i
 
 # Specify references directly
-git diff-reittier compare -f  -t 
+git diff-rettier compare -f  -t 
 
 # Filter files by pattern
-git diff-reittier compare -f main -t develop -p "src/**/*.ts"
+git diff-rettier compare -f main -t develop -p "src/**/*.ts"
 ```
 
 ### Output Format Options
 
 ```bash
 # Tree view (default)
-git diff-reittier compare -f main -t develop --format tree
+git diff-rettier compare -f main -t develop --format tree
 
 # Plain text
-git diff-reittier compare -f main -t develop --format plain
+git diff-rettier compare -f main -t develop --format plain
 
 # JSON format
-git diff-reittier compare -f main -t develop --format json
+git diff-rettier compare -f main -t develop --format json
 ```
 
 ### Command Options
@@ -114,6 +113,9 @@ git diff-rettier compare -i
 ║     📄 Input.tsx     │ ✨ added    │ +45      ║
 ╚══════════════════════╧═════════════╧══════════╝
 ```
+
+<img width="1178" alt="tree format output example" src="https://github.com/user-attachments/assets/a9836f68-3241-41dc-9daa-f31484ee1a6e">
+
 
 ## Important Notes
 
