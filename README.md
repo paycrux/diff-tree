@@ -65,3 +65,5 @@ $ git-diff-analyzer analyze -i
 ✔ Enter file pattern (e.g., "*.ts"): src/*
 ✔ Analysis complete
 ```
+
+<img width="578" alt="스크린샷 2024-11-07 오전 10 54 54" src="https://github.com/user-attachments/assets/04e406d0-cf21-486a-a467-b2d7858b072d">
