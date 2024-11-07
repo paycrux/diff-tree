@@ -114,6 +114,9 @@ git-diff-analyzer compare -i
 ╚══════════════════════╧═════════════╧══════════╝
 ```
 
+<img width="1178" alt="tree format output example" src="https://github.com/user-attachments/assets/a9836f68-3241-41dc-9daa-f31484ee1a6e">
+
+
 ## Important Notes
 
 - Must be run within a Git repository
