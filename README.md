@@ -18,7 +18,7 @@ Especially useful for managing code synchronization in projects with delayed dep
 1. Clone this repository
 ```bash
 git clone
-cd git-diff-analyzer
+cd diff-rettier
 ```
 
 2. Install dependencies
@@ -39,39 +39,40 @@ pnpm link --global
 ### Coming Soon...
 (NPM publication planned)
 ```bash
-npm install -g git-diff-analyzer
+npm install -g diff-rettier
 # or
-yarn global add git-diff-analyzer
+yarn global add diff-rettier
 # or
-pnpm add -g git-diff-analyzer
+pnpm add -g diff-rettier
 ```
 
 ## Usage
 
 ### Basic Commands
+prettier
 
 ```bash
 # Run in interactive mode
-git-diff-analyzer compare -i
+git diff-reittier compare -i
 
 # Specify references directly
-git-diff-analyzer compare -f  -t 
+git diff-reittier compare -f  -t 
 
 # Filter files by pattern
-git-diff-analyzer compare -f main -t develop -p "src/**/*.ts"
+git diff-reittier compare -f main -t develop -p "src/**/*.ts"
 ```
 
 ### Output Format Options
 
 ```bash
 # Tree view (default)
-git-diff-analyzer compare -f main -t develop --format tree
+git diff-reittier compare -f main -t develop --format tree
 
 # Plain text
-git-diff-analyzer compare -f main -t develop --format plain
+git diff-reittier compare -f main -t develop --format plain
 
 # JSON format
-git-diff-analyzer compare -f main -t develop --format json
+git diff-reittier compare -f main -t develop --format json
 ```
 
 ### Command Options
@@ -92,12 +93,12 @@ git-diff-analyzer compare -f main -t develop --format json
 
 1. Analyzing differences between main project and delayed deployment project:
 ```bash
-git-diff-analyzer compare -f main-proj:v1.0.0 -t delayed-proj:v1.0.0
+git diff-rettier compare -f main-proj:v1.0.0 -t delayed-proj:v1.0.0
 ```
 
 2. Check changes in specific directory:
 ```bash
-git-diff-analyzer compare -i
+git diff-rettier compare -i
 # Specify directory pattern in interactive mode: "apps/specific-app/**"
 ```
 

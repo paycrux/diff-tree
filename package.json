@@ -1,11 +1,11 @@
 {
-  "name": "git-diff-analyzer",
+  "name": "git-diff-rettier",
   "version": "1.0.0",
-  "description": "KSNET 배포를 쉽게하면 좋겠어요 ㅜㅜ",
+  "description": "A CLI tool for analyzing and visualizing differences.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "git-diff-analyzer": "./dist/index.js"
+    "git-diff-rettier": "./dist/index.js"
   },
   "type": "module",
   "scripts": {
@@ -22,14 +22,7 @@
   "engines": {
     "node": ">=14.16"
   },
-  "keywords": [
-    "멋진",
-    "박윤국",
-    "git",
-    "diff",
-    "analyzer",
-    "cli"
-  ],
+  "keywords": ["git","diff","analyzer","cli"],
   "author": "Yunkuk Park",
   "license": "MIT",
   "devDependencies": {
