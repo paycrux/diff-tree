@@ -77,8 +77,10 @@ export function getChangeIcon(type: string): string {
     file: "📄",
     modified: "📝",
     deleted: "🗑️",
+    renamed: "🔄",
     added: "✨",
-    warning: "⚠️",
+    warning: "🚨",
+    default: "",
   };
   return icons[type as keyof typeof icons] || "";
 }
@@ -89,5 +91,5 @@ export const colorMap = {
   modified: chalk.yellow,
   renamed: chalk.blue,
   default: chalk.white,
-  dir: chalk.cyan,
+  dir: chalk.dim,
 } as const;

@@ -49,8 +49,6 @@ export class TreeFormatter {
         });
     }
 
-    console.log(result);
-
     return result;
   }
 
@@ -66,19 +64,27 @@ export class TreeFormatter {
   }
 
   private formatType(node: DirectoryNode): string {
-    if (node.type === "dir") {
-      return this.colorize("dir", "dir");
-    }
-    return this.colorize(node.fileType || "default", node.fileType || "");
+    if (node.type === "dir") return "";
+
+    const prefixIcon = this.options.showIcons
+      ? getChangeIcon(node?.fileType || "default")
+      : "";
+    return `${prefixIcon} ${this.colorize(
+      node.fileType || "default",
+      node.fileType || ""
+    )}`;
   }
 
   private formatChanges(node: DirectoryNode): string {
+    const WARNING_THRESHOLD = 500;
     const changes = this.colorizeChanges(node.insertions, node.deletions);
     const warning =
-      node.type === "file" && (node.insertions > 100 || node.deletions > 100)
-        ? ` ${getChangeIcon("warning")}`
+      node.type === "file" &&
+      (node.insertions > WARNING_THRESHOLD ||
+        node.deletions > WARNING_THRESHOLD)
+        ? getChangeIcon("warning")
         : "";
-    return changes + warning;
+    return `${warning} ${changes}`.trim();
   }
 
   private colorizeChanges(insertions: number, deletions: number): string {

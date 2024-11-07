@@ -1,10 +1,8 @@
 // src/cli/index.ts
 import { Command } from "commander";
-import inquirer from "inquirer";
 import chalk from "chalk";
 import ora from "ora";
 import { GitAnalyzer } from "../analyzer/git.js";
-import { table } from "table";
 import { GitDiffError } from "../types/index.js";
 import {
   getCommitCompareAnswers,
