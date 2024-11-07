@@ -1,5 +1,13 @@
 // src/types/index.ts
 
+export enum ChangeType {
+  ADDED = "added",
+  MODIFIED = "modified",
+  DELETED = "deleted",
+  RENAMED = "renamed",
+  DIRECTORY = "dir",
+}
+
 /**
  * Git diff 분석을 위한 옵션 인터페이스
  * @interface GitDiffOptions
@@ -112,6 +120,8 @@ export const ErrorTypes = {
   REPOSITORY_ACCESS_FAILED: "REPOSITORY_ACCESS_FAILED",
   /** 파일 필터링 패턴 오류 */
   INVALID_FILTER_PATTERN: "INVALID_FILTER_PATTERN",
+  /** CLI option 오류 **/
+  INVALID_CLI_OPTIONS: "INVALID_CLI_OPTIONS",
 } as const;
 
 /**

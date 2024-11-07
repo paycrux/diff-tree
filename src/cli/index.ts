@@ -6,16 +6,19 @@ import ora from "ora";
 import { GitAnalyzer } from "../analyzer/git.js";
 import { table } from "table";
 import { GitDiffError } from "../types/index.js";
+import {
+  getCommitCompareAnswers,
+  getDirectoryCompareAnswers,
+  getFormatSelection,
+  getModeSelection,
+  getPatternAnswers,
+} from "./prompt.js";
+import { DiffFormatter } from "../formatters/index.js";
 
 export class CLI {
   private program: Command;
   private analyzer: GitAnalyzer;
-
-  constructor() {
-    this.program = new Command();
-    this.analyzer = new GitAnalyzer();
-    this.setupCommands();
-  }
+  private formatter: DiffFormatter;
 
   private setupCommands(): void {
     this.program
@@ -24,7 +27,7 @@ export class CLI {
       .version("1.0.0");
 
     this.program
-      .command("analyze")
+      .command("compare")
       .description("Analyze differences between git references")
       .option("-i, --interactive", "Run in interactive mode")
       .option("-f, --from <ref>", "Starting reference (tag/commit/branch)")
@@ -33,56 +36,42 @@ export class CLI {
         "-p, --pattern <pattern>",
         'File pattern to filter (e.g., "*.ts")'
       )
+      .option("--format <type>", "Output format (plain|tree|json)", "plain")
+      .option("--no-colors", "Disable colored output")
+      .option("--no-icons", "Disable icons in tree view")
       .action(async (options) => {
         try {
-          if (options.interactive || (!options.from && !options.to)) {
+          if (options.interactive || (!options.from && !options.to))
             await this.runInteractiveMode();
-          } else {
-            await this.runDirectMode(options);
-          }
+          else await this.runDirectMode(options);
         } catch (error: any) {
           this.handleError(error);
         }
       });
   }
 
-  private async runInteractiveMode(): Promise<void> {
-    const answers = await inquirer.prompt([
-      {
-        type: "list",
-        name: "mode",
-        message: "Select analysis mode:",
-        choices: [
-          { name: "Compare tags", value: "tags" },
-          { name: "Compare commits", value: "commits" },
-          { name: "Compare branches", value: "branches" },
-        ],
-      },
-      {
-        type: "input",
-        name: "fromRef",
-        message: "Enter the starting reference:",
-        validate: (input) => input.length > 0 || "Reference cannot be empty",
-      },
-      {
-        type: "input",
-        name: "toRef",
-        message: "Enter the ending reference:",
-        validate: (input) => input.length > 0 || "Reference cannot be empty",
-      },
-      {
-        type: "confirm",
-        name: "usePattern",
-        message: "Do you want to filter files by pattern?",
-        default: false,
-      },
-      {
-        type: "input",
-        name: "pattern",
-        message: 'Enter file pattern (e.g., "*.ts"):',
-        when: (answers) => answers.usePattern,
-      },
-    ]);
+  constructor() {
+    this.program = new Command();
+    this.analyzer = new GitAnalyzer();
+    this.formatter = new DiffFormatter();
+    this.setupCommands();
+  }
+
+  private async runInteractiveMode() {
+    const modeAnswer = await getModeSelection();
+    const formatAnswer = await getFormatSelection();
+
+    this.formatter.updateOptions({ format: formatAnswer.format });
+
+    let answers;
+
+    if (modeAnswer.compareMode === "commits") {
+      answers = await getCommitCompareAnswers();
+    } else {
+      answers = await getDirectoryCompareAnswers();
+    }
+
+    const patternAnswers = await getPatternAnswers();
 
     const spinner = ora("Analyzing differences...").start();
 
@@ -90,7 +79,7 @@ export class CLI {
       const analysis = await this.analyzer.analyzeDiff({
         fromRef: answers.fromRef,
         toRef: answers.toRef,
-        filterPattern: answers.pattern,
+        filterPattern: patternAnswers.pattern,
       });
 
       spinner.succeed("Analysis complete");
@@ -126,50 +115,8 @@ export class CLI {
   }
 
   private displayResults(analysis: any): void {
-    // 전체 통계
-    console.log(chalk.bold("\nOverall Statistics:"));
-    console.log(chalk.blue(`Files Changed: ${analysis.stats.filesChanged}`));
-    console.log(chalk.green(`Insertions: ${analysis.stats.insertions}`));
-    console.log(chalk.red(`Deletions: ${analysis.stats.deletions}`));
-
-    // 파일 타입별 통계
-    console.log(chalk.bold("\nBy File Type:"));
-    const typeData = Object.entries(analysis.byFileType).map(
-      ([ext, stats]: [string, any]) => [
-        ext,
-        stats.count,
-        chalk.green(stats.insertions),
-        chalk.red(stats.deletions),
-      ]
-    );
-
-    console.log(
-      table([["Extension", "Count", "Insertions", "Deletions"], ...typeData])
-    );
-
-    // 변경된 파일 목록
-    console.log(chalk.bold("\nChanged Files:"));
-    const fileData = analysis.changes.map((change: any) => [
-      change.path,
-      this.getChangeTypeColor(change.type)(change.type),
-      chalk.green(change.insertions),
-      chalk.red(change.deletions),
-    ]);
-
-    console.log(
-      table([["Path", "Type", "Insertions", "Deletions"], ...fileData])
-    );
-  }
-
-  private getChangeTypeColor(type: string): (text: string) => string {
-    switch (type) {
-      case "added":
-        return chalk.green;
-      case "deleted":
-        return chalk.red;
-      default:
-        return chalk.yellow;
-    }
+    const output = this.formatter.format(analysis);
+    console.log(output);
   }
 
   private async handleError(error: GitDiffError | Error): Promise<void> {
