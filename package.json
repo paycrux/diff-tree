@@ -5,15 +5,23 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "git-diff-analyzer": "dist/cli.js"
+    "git-diff-analyzer": "./dist/index.js"
   },
+  "type": "module",
   "scripts": {
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "ts-node src/cli.ts",
-    "dev": "ts-node-dev --respawn src/cli.ts",
-    "test": "jest",
-    "lint": "eslint . --ext .ts",
-    "prepare": "npm run build"
+    "start": "node dist/index.js",
+    "test": "vitest"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "engines": {
+    "node": ">=14.16"
   },
   "keywords": [
     "멋진",
@@ -37,10 +45,12 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {
     "chalk": "^5.3.0",
+    "commander": "^12.1.0",
     "inquirer": "^12.0.1",
     "ora": "^8.1.1",
     "table": "^6.8.2"

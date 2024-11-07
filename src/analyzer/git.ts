@@ -6,7 +6,7 @@ import {
   FileChange,
   GitDiffError,
   GitDiffOptions,
-} from "../types";
+} from "../types/index.js";
 import path from "path";
 
 const execAsync = promisify(exec);
