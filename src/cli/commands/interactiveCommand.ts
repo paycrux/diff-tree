@@ -14,9 +14,17 @@ export class InteractiveCompareCommand implements GitCommand {
   private routeManager: RouteManager;
   constructor(private context: CommandContext) {
     this.routeManager = new RouteManager(context);
+
+    this.context.events.on("navigation:main", () => {
+      this.execute().catch((error) =>
+        console.error("Failed to restart interactive mode:", error)
+      );
+    });
   }
 
   async execute(): Promise<void> {
+    console.clear();
+
     const answers = await getModeSelection()
       .then((answers) => {
         if (answers.compareMode === "commits") return getCommitCompareAnswers();
@@ -47,8 +55,6 @@ export class InteractiveCompareCommand implements GitCommand {
 
       this.context.events.emit("analysis:complete", analysis);
       spinner.succeed("Analysis complete");
-      const output = this.context.formatter.format(analysis);
-      console.log(output);
 
       await this.routeManager.showFileSelectionRoute(analysis.changes);
     } catch (error) {

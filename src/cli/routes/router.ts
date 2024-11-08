@@ -8,7 +8,7 @@ export class RouteManager {
   constructor(private context: CommandContext) {}
 
   async showFileSelectionRoute(files: FileChange[]) {
-    const { events, store } = this.context;
+    const { events, store, formatter } = this.context;
     const state = store.getState();
     const analysis = state.analysis.currentAnalysis;
 
@@ -17,6 +17,10 @@ export class RouteManager {
         "No analysis available",
         ErrorTypes.NO_ANALYSIS_AVAILABLE
       );
+
+    console.clear(); // 먼저 화면 지우기
+    const tableOutput = formatter.format({ ...analysis, changes: files });
+    console.log(tableOutput);
 
     const answers = await inquirer.prompt([
       {
