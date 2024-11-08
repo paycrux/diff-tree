@@ -130,7 +130,7 @@ git diff-tree compare -i
 - Analysis may take time in large repositories
 - Filter patterns support regular expressions
 
-## 내가 안잊어버리려고 적는 구조
+## Architecture
 
 ```mermaid
 graph TB
