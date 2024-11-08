@@ -1,115 +1,155 @@
+import inquirer, { Answers } from "inquirer";
 import { PROMPT_CONFIG, validators } from "./config.js";
-import inquirer from "inquirer";
+import { FormatType } from "../formatters/types.js";
 
-export async function getModeSelection() {
-  return inquirer.prompt([
-    {
-      type: "list",
-      name: "compareMode",
-      message: "Select comparison mode:",
-      choices: [
-        {
-          name: "Compare directories",
-          value: "directories" as const,
-          short: "Directories",
-        },
-        {
-          name: "Compare commits/branches",
-          value: "commits" as const,
-          short: "Commits/branches",
-        },
-      ],
-    },
-  ]);
+// 기본 타입 정의
+type CompareMode = "directories" | "commits";
+
+// Prompt 결과 타입들을 명시적으로 정의
+interface ModeSelectionResult extends Answers {
+  compareMode: CompareMode;
 }
 
-export async function getFormatSelection() {
-  return inquirer.prompt([
-    {
-      type: "list",
-      name: "format",
-      message: "Select output format:",
-      choices: [
-        {
-          name: "Tree view",
-          value: "tree" as const,
-          short: "Tree",
-        },
-        {
-          name: "Plain text",
-          value: "plain" as const,
-          short: "Plain",
-        },
-        {
-          name: "JSON",
-          value: "json" as const,
-          short: "JSON",
-        },
-      ],
-    },
-  ]);
+interface FormatSelectionResult extends Answers {
+  format: FormatType;
 }
 
-export async function getCommitCompareAnswers() {
-  return inquirer.prompt([
-    {
-      type: "input",
-      name: "fromRef",
-      message: "Enter the starting reference:",
-      validate: validators.nonEmpty,
-    },
-    {
-      type: "input",
-      name: "toRef",
-      message: "Enter the ending reference:",
-      validate: validators.nonEmpty,
-    },
-  ]);
+interface CompareCommitResult extends Answers {
+  fromRef: string;
+  toRef: string;
 }
 
-export async function getDirectoryCompareAnswers() {
-  const dirAnswers = await inquirer.prompt([
-    {
-      type: "input",
-      name: "baseBranch",
-      message: "Enter the base branch:",
-      default: PROMPT_CONFIG.defaults.baseBranch,
-      validate: validators.nonEmpty,
-    },
-    {
-      type: "input",
-      name: "fromDir",
-      message: "Enter the first directory path:",
-      validate: validators.nonEmpty,
-    },
-    {
-      type: "input",
-      name: "toDir",
-      message: "Enter the second directory path:",
-      validate: validators.nonEmpty,
-    },
-  ]);
+interface CompareDirectoryResult extends Answers {
+  baseBranch: string;
+  fromDir: string;
+  toDir: string;
+}
+
+interface PatternFilterResult extends Answers {
+  usePattern: boolean;
+  pattern?: string;
+}
+
+// Prompt 함수들의 반환 타입을 명시적으로 정의
+type PromptFunctions = {
+  modeSelection: () => Promise<ModeSelectionResult>;
+  formatSelection: () => Promise<FormatSelectionResult>;
+  compareCommit: () => Promise<CompareCommitResult>;
+  compareDirectory: () => Promise<CompareDirectoryResult>;
+  usePatternFilter: () => Promise<PatternFilterResult>;
+  getDirectoryCompareAnswers: () => Promise<
+    CompareDirectoryResult & { fromRef: string; toRef: string }
+  >;
+};
+
+export const createPrompt = (): PromptFunctions => {
+  const modeSelection = () =>
+    inquirer.prompt<ModeSelectionResult>([
+      {
+        type: "list",
+        name: "compareMode",
+        message: "Select comparison mode:",
+        choices: [
+          {
+            name: "Compare directories",
+            value: "directories",
+            short: "Directories",
+          },
+          {
+            name: "Compare commits/branches",
+            value: "commits",
+            short: "Commits/branches",
+          },
+        ],
+      },
+    ]);
+
+  const formatSelection = () =>
+    inquirer.prompt<FormatSelectionResult>([
+      {
+        type: "list",
+        name: "format",
+        message: "Select output format:",
+        choices: [
+          { name: "Tree view", value: "tree" as const, short: "Tree" },
+          { name: "Plain text", value: "plain" as const, short: "Plain" },
+          { name: "JSON", value: "json" as const, short: "JSON" },
+        ],
+      },
+    ]);
+
+  const compareCommit = () =>
+    inquirer.prompt<CompareCommitResult>([
+      {
+        type: "input",
+        name: "fromRef",
+        message: "Enter the starting reference:",
+        validate: validators.nonEmpty,
+      },
+      {
+        type: "input",
+        name: "toRef",
+        message: "Enter the ending reference:",
+        validate: validators.nonEmpty,
+      },
+    ]);
+
+  const compareDirectory = () =>
+    inquirer.prompt<CompareDirectoryResult>([
+      {
+        type: "input",
+        name: "baseBranch",
+        message: "Enter the base branch:",
+        default: PROMPT_CONFIG.defaults.baseBranch,
+        validate: validators.nonEmpty,
+      },
+      {
+        type: "input",
+        name: "fromDir",
+        message: "Enter the first directory path:",
+        validate: validators.nonEmpty,
+      },
+      {
+        type: "input",
+        name: "toDir",
+        message: "Enter the second directory path:",
+        validate: validators.nonEmpty,
+      },
+    ]);
+
+  const usePatternFilter = () =>
+    inquirer.prompt<PatternFilterResult>([
+      {
+        type: "confirm",
+        name: "usePattern",
+        message: "Do you want to filter files by pattern?",
+        default: false,
+      },
+      {
+        type: "input",
+        name: "pattern",
+        message: 'Enter file pattern (e.g., "*.ts"):',
+        when: (answers) => answers.usePattern,
+      },
+    ]);
+
+  const getDirectoryCompareAnswers = async () => {
+    const dirAnswers = await compareDirectory();
+    return {
+      ...dirAnswers,
+      fromRef: `${dirAnswers.baseBranch}:${dirAnswers.fromDir}`,
+      toRef: `${dirAnswers.baseBranch}:${dirAnswers.toDir}`,
+    };
+  };
 
   return {
-    ...dirAnswers,
-    fromRef: `${dirAnswers.baseBranch}:${dirAnswers.fromDir}`,
-    toRef: `${dirAnswers.baseBranch}:${dirAnswers.toDir}`,
+    modeSelection,
+    formatSelection,
+    compareCommit,
+    compareDirectory,
+    usePatternFilter,
+    getDirectoryCompareAnswers,
   };
-}
+};
 
-export async function getPatternAnswers() {
-  return inquirer.prompt([
-    {
-      type: "confirm",
-      name: "usePattern",
-      message: "Do you want to filter files by pattern?",
-      default: false,
-    },
-    {
-      type: "input",
-      name: "pattern",
-      message: 'Enter file pattern (e.g., "*.ts"):',
-      when: (answers) => answers.usePattern,
-    },
-  ]);
-}
+export const PROMPT = createPrompt();

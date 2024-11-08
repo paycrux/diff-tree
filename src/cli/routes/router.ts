@@ -26,6 +26,7 @@ export class RouteManager {
       {
         type: "list",
         name: "action",
+        loop: false,
         message: "Select a file to view details or choose an action:",
         choices: [
           ...files.map((file) => ({

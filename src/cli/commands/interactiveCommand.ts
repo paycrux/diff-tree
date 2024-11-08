@@ -1,13 +1,7 @@
 import ora from "ora";
 import { GitCommand } from "../../types/index.js";
 import { CommandContext } from "../context/index.js";
-import {
-  getCommitCompareAnswers,
-  getDirectoryCompareAnswers,
-  getFormatSelection,
-  getModeSelection,
-  getPatternAnswers,
-} from "../prompt.js";
+import { PROMPT } from "../prompt.js";
 import { RouteManager } from "../routes/router.js";
 
 export class InteractiveCompareCommand implements GitCommand {
@@ -25,22 +19,22 @@ export class InteractiveCompareCommand implements GitCommand {
   async execute(): Promise<void> {
     console.clear();
 
-    const answers = await getModeSelection()
+    const answers = await PROMPT.modeSelection()
       .then((answers) => {
-        if (answers.compareMode === "commits") return getCommitCompareAnswers();
-        return getDirectoryCompareAnswers();
+        if (answers.compareMode === "commits") return PROMPT.compareCommit();
+        return PROMPT.getDirectoryCompareAnswers();
       })
       .then(({ fromRef, toRef, ...rest }) => {
         this.context.store.setRefs({ fromRef, toRef });
         return { fromRef, toRef, ...rest };
       });
 
-    const formatAnswer = await getFormatSelection();
+    const formatAnswer = await PROMPT.formatSelection();
     this.context.formatter.updateOptions({ format: formatAnswer.format });
     this.context.events.emit("interaction:format:select", formatAnswer);
     this.context.store.setUIState({ selectedFormat: formatAnswer.format });
 
-    const patternAnswers = await getPatternAnswers();
+    const patternAnswers = await PROMPT.usePatternFilter();
     this.context.events.emit("interaction:pattern:select", patternAnswers);
     this.context.store.setUIState({ selectedPattern: patternAnswers.pattern });
 

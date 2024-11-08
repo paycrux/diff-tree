@@ -1,13 +1,5 @@
 // src/types/index.ts
 
-export enum ChangeType {
-  ADDED = "added",
-  MODIFIED = "modified",
-  DELETED = "deleted",
-  RENAMED = "renamed",
-  DIRECTORY = "dir",
-}
-
 /**
  * Git diff 분석을 위한 옵션 인터페이스
  * @interface CompareOptions
@@ -83,29 +75,6 @@ export interface DiffAnalysis {
   changes: FileChange[];
   /** 파일 타입별 통계 정보 */
   byFileType: Record<string, TypeStats>;
-}
-
-/**
- * Git diff 분석 모드
- * @typedef {('tag' | 'commit' | 'branch')} AnalysisMode
- */
-export type AnalysisMode = "tag" | "commit" | "branch";
-
-/**
- * CLI 실행 옵션 인터페이스
- * @interface CLIOptions
- */
-export interface CLIOptions {
-  /** 분석 모드 선택 (tag, commit, branch) */
-  mode: AnalysisMode;
-  /** 시작 레퍼런스 */
-  fromRef: string;
-  /** 종료 레퍼런스 */
-  toRef: string;
-  /** 파일 필터링 패턴 */
-  filterPattern?: string;
-  /** 출력 포맷 */
-  outputFormat: "table" | "json";
 }
 
 /**

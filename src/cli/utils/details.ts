@@ -24,7 +24,7 @@ export async function getFileDetails(
       fromRef,
       toRef,
       diff,
-      content: diff, // 실제로는 더 자세한 파싱이 필요할 수 있습니다
+      content: diff,
     };
   } catch (error) {
     throw new Error(`Failed to get file details`);
