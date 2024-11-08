@@ -1,6 +1,7 @@
 import inquirer, { Answers } from "inquirer";
 import { PROMPT_CONFIG, validators } from "./config.js";
 import { FormatType } from "../formatters/types.js";
+import { FileChange } from "../types/index.js";
 
 // 기본 타입 정의
 type CompareMode = "directories" | "commits";
@@ -30,6 +31,10 @@ interface PatternFilterResult extends Answers {
   pattern?: string;
 }
 
+interface ChoiceChangedFileResult extends Answers {
+  action: { type: "file"; path: string } | { type: "back" } | { type: "exit" };
+}
+
 // Prompt 함수들의 반환 타입을 명시적으로 정의
 type PromptFunctions = {
   modeSelection: () => Promise<ModeSelectionResult>;
@@ -37,6 +42,7 @@ type PromptFunctions = {
   compareCommit: () => Promise<CompareCommitResult>;
   compareDirectory: () => Promise<CompareDirectoryResult>;
   usePatternFilter: () => Promise<PatternFilterResult>;
+  choiceChangedFile: (files: FileChange[]) => Promise<ChoiceChangedFileResult>;
   getDirectoryCompareAnswers: () => Promise<
     CompareDirectoryResult & { fromRef: string; toRef: string }
   >;
@@ -133,6 +139,24 @@ export const createPrompt = (): PromptFunctions => {
       },
     ]);
 
+  const choiceChangedFile = (files: FileChange[]) =>
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        loop: false,
+        message: "Select a file to view details or choose an action:",
+        choices: [
+          ...files.map((file) => ({
+            name: `${file.path} (${file.insertions} insertions, ${file.deletions} deletions)`,
+            value: { type: "file", path: file.path },
+          })),
+          { name: "Back to main menu", value: { type: "back" } },
+          { name: "Exit", value: { type: "exit" } },
+        ],
+      },
+    ]);
+
   const getDirectoryCompareAnswers = async () => {
     const dirAnswers = await compareDirectory();
     return {
@@ -148,6 +172,7 @@ export const createPrompt = (): PromptFunctions => {
     compareCommit,
     compareDirectory,
     usePatternFilter,
+    choiceChangedFile,
     getDirectoryCompareAnswers,
   };
 };

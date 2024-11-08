@@ -3,6 +3,7 @@ import { ErrorTypes, FileChange, GitDiffError } from "../../types/index.js";
 import { CommandContext } from "../context/index.js";
 import ora from "ora";
 import { formatDetails, getFileDetails } from "../utils/details.js";
+import { PROMPT } from "../prompt.js";
 
 export class RouteManager {
   constructor(private context: CommandContext) {}
@@ -22,22 +23,7 @@ export class RouteManager {
     const tableOutput = formatter.format({ ...analysis, changes: files });
     console.log(tableOutput);
 
-    const answers = await inquirer.prompt([
-      {
-        type: "list",
-        name: "action",
-        loop: false,
-        message: "Select a file to view details or choose an action:",
-        choices: [
-          ...files.map((file) => ({
-            name: `${file.path} (${file.insertions} insertions, ${file.deletions} deletions)`,
-            value: { type: "file", path: file.path },
-          })),
-          { name: "Back to main menu", value: { type: "back" } },
-          { name: "Exit", value: { type: "exit" } },
-        ],
-      },
-    ]);
+    const answers = await PROMPT.choiceChangedFile(files);
 
     switch (answers.action.type) {
       case "file":
