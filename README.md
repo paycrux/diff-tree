@@ -1,6 +1,6 @@
-# diff-rettier (이름은 변경될 수 있음)
+# diff-tree (이름은 변경될 수 있음)
 
-A CLI tool for analyzing and visualizing differences between branches, tags, and commits. 
+A CLI tool for analyzing and visualizing differences between branches, tags, and commits.
 Especially useful for managing code synchronization in projects with delayed deployments.
 
 ## Key Features
@@ -16,34 +16,40 @@ Especially useful for managing code synchronization in projects with delayed dep
 ### Local Install
 
 1. Clone this repository
+
 ```bash
 git clone
-cd diff-rettier
+cd diff-tree
 ```
 
 2. Install dependencies
+
 ```bash
 pnpm install --frozen-lockfile
 ```
 
 3. Build
+
 ```bash
 pnpm run build
 ```
 
 4. Link
+
 ```bash
 pnpm link --global
 ```
 
 ### Coming Soon...
+
 (NPM publication planned)
+
 ```bash
-npm install -g diff-rettier
+npm install -g diff-tree
 # or
-yarn global add diff-rettier
+yarn global add diff-tree
 # or
-pnpm add -g diff-rettier
+pnpm add -g diff-tree
 ```
 
 ## Usage
@@ -52,52 +58,54 @@ pnpm add -g diff-rettier
 
 ```bash
 # Run in interactive mode
-git diff-rettier compare -i
+git diff-tree compare -i
 
 # Specify references directly
-git diff-rettier compare -f  -t 
+git diff-tree compare -f  -t
 
 # Filter files by pattern
-git diff-rettier compare -f main -t develop -p "src/**/*.ts"
+git diff-tree compare -f main -t develop -p "src/**/*.ts"
 ```
 
 ### Output Format Options
 
 ```bash
 # Tree view (default)
-git diff-rettier compare -f main -t develop --format tree
+git diff-tree compare -f main -t develop --format tree
 
 # Plain text
-git diff-rettier compare -f main -t develop --format plain
+git diff-tree compare -f main -t develop --format plain
 
 # JSON format
-git diff-rettier compare -f main -t develop --format json
+git diff-tree compare -f main -t develop --format json
 ```
 
 ### Command Options
 
-| Option | Description |
-|--------|-------------|
-|`-i, --interactive`|Run in interactive mode |
-|`-f, --from <ref>`|Starting reference (branch/tag/commit) |
-|`-t, --to <ref>`|Ending reference (branch/tag/commit) |
-|`-p, --pattern <pattern>`|File filtering pattern |
-|`--format <type>`|Output format (tree/plain/json) |
-|`--no-colors`|Disable colored output |
-|`--no-icons`|Disable icons in display |
+| Option                    | Description                            |
+| ------------------------- | -------------------------------------- |
+| `-i, --interactive`       | Run in interactive mode                |
+| `-f, --from <ref>`        | Starting reference (branch/tag/commit) |
+| `-t, --to <ref>`          | Ending reference (branch/tag/commit)   |
+| `-p, --pattern <pattern>` | File filtering pattern                 |
+| `--format <type>`         | Output format (tree/plain/json)        |
+| `--no-colors`             | Disable colored output                 |
+| `--no-icons`              | Disable icons in display               |
 
 ## Usage Examples
 
 ### Code Synchronization Analysis in Monorepo
 
 1. Analyzing differences between main project and delayed deployment project:
+
 ```bash
-git diff-rettier compare -f main-proj:v1.0.0 -t delayed-proj:v1.0.0
+git diff-tree compare -f main-proj:v1.0.0 -t delayed-proj:v1.0.0
 ```
 
 2. Check changes in specific directory:
+
 ```bash
-git diff-rettier compare -i
+git diff-tree compare -i
 # Specify directory pattern in interactive mode: "apps/specific-app/**"
 ```
 
@@ -116,7 +124,6 @@ git diff-rettier compare -i
 
 <img width="1178" alt="tree format output example" src="https://github.com/user-attachments/assets/a9836f68-3241-41dc-9daa-f31484ee1a6e">
 
-
 ## Important Notes
 
 - Must be run within a Git repository
@@ -124,6 +131,7 @@ git diff-rettier compare -i
 - Filter patterns support regular expressions
 
 ## 내가 안잊어버리려고 적는 구조
+
 ```mermaid
 graph TB
     CLI["CLI (Entry Point)"]
@@ -138,34 +146,34 @@ graph TB
     ROUTE["RouteManager"]
     GIT["GitAnalyzer"]
     FORM["DiffFormatter"]
-    
+
     CLI --> CMD
     CMD --> IC
     CMD --> DC
-    
+
     IC --> CTX
     DC --> CTX
-    
+
     CTX --> STORE
     CTX --> EMIT
     CTX --> GIT
     CTX --> FORM
-    
+
     IC --> ROUTE
     ROUTE --> CTX
-    
+
     subgraph Formatters
         FORM --> TREE["TreeFormatter"]
         FORM --> PLAIN["PlainFormatter"]
         FORM --> JSON["JSONFormatter"]
     end
-    
+
     subgraph State Management
         STORE --> STATE["AppState
         - Analysis
         - UI State"]
     end
-    
+
     subgraph Git Operations
         GIT --> EXEC["Git Command
         Executor"]

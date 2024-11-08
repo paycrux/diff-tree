@@ -1,11 +1,11 @@
 {
-  "name": "git-diff-rettier",
+  "name": "git-diff-tree",
   "version": "1.0.0",
   "description": "A CLI tool for analyzing and visualizing differences.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "git-diff-rettier": "./dist/index.js"
+    "git-diff-tree": "./dist/index.js"
   },
   "type": "module",
   "scripts": {

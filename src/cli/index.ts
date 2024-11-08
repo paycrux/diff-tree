@@ -20,7 +20,7 @@ export class CLI {
 
   private setupCommands(): void {
     this.program
-      .name("git-diff-rettier")
+      .name("git-diff-tree")
       .description("A tool for analyzing git differences between references")
       .version("1.0.0");
 
