@@ -28,6 +28,7 @@ export class CLI {
       .command("compare")
       .description("Analyze differences between git references")
       .option("-i, --interactive", "Run in interactive mode")
+      .option("-s, --sync", "Enable file synchronization (only works with -i)")
       .option("-f, --from <ref>", "Starting reference (tag/commit/branch)")
       .option("-t, --to <ref>", "Ending reference (tag/commit/branch)")
       .option(
@@ -39,6 +40,15 @@ export class CLI {
       .option("--no-icons", "Disable icons in tree view")
       .action(async (options) => {
         try {
+          if (options.sync && !options.interactive) {
+            console.warn(
+              chalk.yellow(
+                "\nWarning: Sync option only works with interactive mode (-i). Ignoring sync option."
+              )
+            );
+            options.sync = false;
+          }
+
           const command = this.createCommand(options);
           await command.execute();
         } catch (error: any) {
@@ -48,7 +58,11 @@ export class CLI {
   }
 
   private createCommand(options: any) {
-    if (options.interactive) return new InteractiveCompareCommand(this.context);
+    if (options.interactive) {
+      return new InteractiveCompareCommand(this.context, {
+        sync: options.sync,
+      });
+    }
 
     return new DirectCompareCommand(this.context, {
       toRef: options.to,
