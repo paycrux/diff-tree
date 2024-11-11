@@ -9,8 +9,7 @@ export class RouteManager {
   constructor(private context: CommandContext) {}
 
   async showFileSelectionRoute(files: FileChange[]) {
-    const { events, store, formatter } = this.context;
-    const state = store.getState();
+    const state = this.context.store.getState();
     const analysis = state.analysis.currentAnalysis;
 
     if (!analysis)
@@ -20,7 +19,10 @@ export class RouteManager {
       );
 
     console.clear(); // 먼저 화면 지우기
-    const tableOutput = formatter.format({ ...analysis, changes: files });
+    const tableOutput = this.context.formatter.format({
+      ...analysis,
+      changes: files,
+    });
     console.log(tableOutput);
 
     const answers = await PROMPT.choiceChangedFile(files);
@@ -30,7 +32,7 @@ export class RouteManager {
         await this.showFileDetails(answers.action.path);
         break;
       case "back":
-        events.emit("navigation:main", null);
+        this.context.dispatch({ type: "NAVIGATION_CHANGE", payload: "main" });
         break;
       case "exit":
         process.exit(0);
@@ -38,8 +40,7 @@ export class RouteManager {
   }
 
   private async showFileDetails(filePath: string): Promise<void> {
-    const { events, store } = this.context;
-    const state = store.getState();
+    const state = this.context.store.getState();
     const { fromRef, toRef } = state.analysis.refs;
 
     const spinner = ora("Fetching file details...").start();
@@ -60,7 +61,7 @@ export class RouteManager {
     }
   }
 
-  private async showDetailActionMenu(currentFilePath: string): Promise<void> {
+  private async showDetailActionMenu(currentFilePath: string) {
     const answers = await inquirer.prompt([
       {
         type: "list",
@@ -75,14 +76,17 @@ export class RouteManager {
     ]);
 
     switch (answers.action) {
-      case "list":
-        const state = this.context.store.getState();
-        await this.showFileSelectionRoute(
-          state.analysis.currentAnalysis!.changes
-        );
+      case "list": {
+        const state = this.context.getState();
+        if (state.analysis.currentAnalysis) {
+          await this.showFileSelectionRoute(
+            state.analysis.currentAnalysis.changes
+          );
+        }
         break;
+      }
       case "main":
-        this.context.events.emit("navigation:main", null);
+        this.context.dispatch({ type: "NAVIGATION_CHANGE", payload: "main" });
         break;
       case "exit":
         process.exit(0);
