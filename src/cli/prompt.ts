@@ -36,6 +36,10 @@ interface ChoiceChangedFileResult extends Answers {
   action: { type: "file"; path: string } | { type: "back" } | { type: "exit" };
 }
 
+interface SyncActionResult extends Answers {
+  action: "confirm" | "skip" | "next" | "prev" | "list";
+}
+
 // Prompt 함수들의 반환 타입을 명시적으로 정의
 type PromptFunctions = {
   modeSelection: () => Promise<ModeSelectionResult>;
@@ -44,6 +48,7 @@ type PromptFunctions = {
   compareDirectory: () => Promise<CompareDirectoryResult>;
   usePatternFilter: () => Promise<PatternFilterResult>;
   choiceChangedFile: (files: FileChange[]) => Promise<ChoiceChangedFileResult>;
+  syncActionPrompt: (filePath: string) => Promise<SyncActionResult>;
   getDirectoryCompareAnswers: () => Promise<
     CompareDirectoryResult & { fromRef: string; toRef: string }
   >;
@@ -160,6 +165,26 @@ export const createPrompt = (): PromptFunctions => {
       },
     ]);
 
+  const syncActionPrompt = (filePath: string) =>
+    inquirer.prompt<SyncActionResult>([
+      {
+        type: "list",
+        name: "action",
+        message: chalk.bold(
+          `\nCurrent file: ${filePath}\nStatus: Reviewing in VSCode\n\nChoose action:`
+        ),
+        choices: [
+          { name: "Confirm sync [Enter]", value: "confirm" },
+          { name: "Skip file [Esc]", value: "skip" },
+          { name: "View next diff [→]", value: "next" },
+          { name: "View previous diff [←]", value: "prev" },
+          { name: "Go to file list", value: "list" },
+        ],
+        pageSize: 5,
+        loop: false,
+      },
+    ]);
+
   const getDirectoryCompareAnswers = async () => {
     const dirAnswers = await compareDirectory();
     return {
@@ -176,6 +201,7 @@ export const createPrompt = (): PromptFunctions => {
     compareDirectory,
     usePatternFilter,
     choiceChangedFile,
+    syncActionPrompt,
     getDirectoryCompareAnswers,
   };
 };
