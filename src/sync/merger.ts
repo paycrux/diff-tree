@@ -1,6 +1,9 @@
-import { exec } from "child_process";
-import { promisify } from "util";
-import { SyncError, SyncErrorTypes, SyncResult } from "./types.js";
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import * as fs from 'fs/promises';
+import path from 'path';
+import { SyncError, SyncErrorTypes, SyncResult } from './types.js';
+import chalk from 'chalk';
 
 const execAsync = promisify(exec);
 
@@ -8,126 +11,129 @@ export class FileMerger {
   constructor(private workspacePath: string) {}
 
   /**
-   * fromRef의 파일 내용을 toRef로 동기화합니다.
+   * ref에서 실제 브랜치/태그와 파일 경로를 분리
    */
-  async syncFile(
-    filePath: string,
-    fromRef: string,
-    toRef: string
-  ): Promise<SyncResult> {
-    try {
-      // 1. fromRef의 파일 내용 가져오기
-      const { stdout: fileContent } = await execAsync(
-        `git show ${fromRef}:${filePath}`,
-        { cwd: this.workspacePath }
-      );
+  private parseRef(ref: string): { gitRef: string; filePath: string } {
+    const [gitRef, ...pathParts] = ref.split(':');
+    return {
+      gitRef,
+      filePath: pathParts.join(':'), // 경로에 콜론이 포함될 수 있으므로 다시 결합
+    };
+  }
 
-      // 2. 임시 브랜치 생성 (toRef 기준)
-      const tempBranch = `temp-sync-${Date.now()}`;
-      await execAsync(`git checkout -b ${tempBranch} ${toRef}`, {
+  /**
+   * fromRef의 파일 내용을 가져옵니다
+   */
+  private async getFileContent(ref: string, originalPath: string): Promise<string> {
+    const { gitRef, filePath } = this.parseRef(ref);
+    const targetPath = path.join(filePath, originalPath);
+
+    try {
+      const { stdout } = await execAsync(`git show "${gitRef}:${targetPath}"`, {
         cwd: this.workspacePath,
       });
-
-      try {
-        // 3. 파일 내용 업데이트
-        await this.writeFile(filePath, fileContent);
-
-        // 4. 변경사항이 있는지 확인
-        const { stdout: status } = await execAsync(
-          `git status --porcelain ${filePath}`,
-          { cwd: this.workspacePath }
-        );
-
-        if (!status) {
-          // 변경사항이 없으면 임시 브랜치 삭제 후 종료
-          await this.cleanup(tempBranch);
-          return { success: true };
-        }
-
-        // 5. 변경사항을 스테이징
-        await execAsync(`git add ${filePath}`, { cwd: this.workspacePath });
-
-        // 6. toRef로 체크아웃
-        await execAsync(`git checkout ${toRef}`, { cwd: this.workspacePath });
-
-        // 7. 임시 브랜치의 변경사항을 toRef에 머지
-        await execAsync(`git merge ${tempBranch}`, { cwd: this.workspacePath });
-
-        // 8. 정리
-        await this.cleanup(tempBranch);
-
-        return { success: true };
-      } catch (error) {
-        // 에러 발생 시 정리 후 에러 전파
-        await this.cleanup(tempBranch);
-        throw error;
-      }
+      return stdout;
     } catch (error: any) {
-      if (error.message.includes("conflict")) {
-        return {
-          success: false,
-          error: new SyncError(
-            "Merge conflict detected",
-            SyncErrorTypes.MERGE_CONFLICT,
-            { filePath }
-          ),
-          conflictFiles: [filePath],
-        };
-      }
-
-      throw new SyncError(
-        `Failed to sync file: ${error.message}`,
-        SyncErrorTypes.SYNC_FAILED,
-        { originalError: error, filePath }
-      );
+      throw new SyncError(`Failed to get file content: ${error.message}`, SyncErrorTypes.SYNC_FAILED, {
+        ref,
+        path: targetPath,
+      });
     }
   }
 
   /**
-   * 파일의 변경사항을 롤백합니다.
+   * 파일 동기화를 수행합니다
    */
-  async rollback(filePath: string): Promise<void> {
+  async syncFile(filePath: string, fromRef: string, toRef: string, modifiedContent?: string): Promise<SyncResult> {
+    const { gitRef: toGitRef, filePath: toFilePath } = this.parseRef(toRef);
+    console.log(
+      chalk.cyanBright(`toGitRef: ${toGitRef} toFilePath: ${toFilePath}  filePath: ${filePath}  fromRef: ${fromRef}`)
+    );
+    const fullTargetPath = path.join(toFilePath, filePath);
+    const fullPath = path.join(this.workspacePath, fullTargetPath);
+    const backupPath = `${fullPath}.backup`;
+
     try {
-      // 스테이징된 변경사항이 있으면 언스테이징
-      await execAsync(`git reset HEAD ${filePath}`, {
+      // 1. 백업 생성
+      try {
+        await fs.copyFile(fullPath, backupPath);
+      } catch {
+        // 파일이 없을 수 있음 - 무시
+      }
+
+      // 2. 새 내용 쓰기
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+
+      if (modifiedContent !== undefined) {
+        await fs.writeFile(fullPath, modifiedContent);
+      } else {
+        const content = await this.getFileContent(fromRef, filePath);
+        await fs.writeFile(fullPath, content);
+      }
+
+      // 3. 변경사항 확인
+      const { stdout: diffStatus } = await execAsync(`git diff --name-only "${fullTargetPath}"`, {
         cwd: this.workspacePath,
       });
 
-      // 작업 디렉토리의 변경사항 되돌리기
-      await execAsync(`git checkout -- ${filePath}`, {
+      if (!diffStatus.trim()) {
+        return { success: true, noChanges: true };
+      }
+
+      // 4. 변경사항을 스테이징
+      await execAsync(`git add "${fullTargetPath}"`, {
         cwd: this.workspacePath,
       });
-    } catch (error: any) {
-      throw new SyncError(
-        `Failed to rollback changes: ${error.message}`,
-        SyncErrorTypes.SYNC_FAILED,
-        { filePath }
-      );
-    }
-  }
 
-  private async cleanup(tempBranch: string): Promise<void> {
-    try {
-      // 임시 브랜치가 있으면 삭제
-      await execAsync(`git branch -D ${tempBranch}`, {
+      // 5. 자동 커밋 생성
+      const commitMessage = `sync: Update ${filePath} from ${fromRef} to ${toRef}`;
+      await execAsync(`git commit -m "${commitMessage}"`, {
         cwd: this.workspacePath,
-      }).catch(() => {}); // 브랜치가 없어도 무시
-    } catch (error) {
-      console.error("Cleanup failed:", error);
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      // 8. 에러 발생 시 롤백
+      try {
+        if (await this.fileExists(backupPath)) {
+          await fs.copyFile(backupPath, fullPath);
+          await execAsync(`git reset HEAD "${fullTargetPath}"`, {
+            cwd: this.workspacePath,
+          });
+        }
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError);
+      }
+
+      if (error.message.includes('does not exist')) {
+        return {
+          success: false,
+          error: new SyncError(`File not found in reference: ${fullTargetPath}`, SyncErrorTypes.SYNC_FAILED, {
+            filePath: fullTargetPath,
+          }),
+        };
+      }
+
+      throw new SyncError(`Failed to sync file: ${error.message}`, SyncErrorTypes.SYNC_FAILED, {
+        originalError: error,
+        filePath: fullTargetPath,
+      });
+    } finally {
+      // 9. 백업 파일 정리
+      try {
+        await fs.unlink(backupPath).catch(() => {});
+      } catch {
+        // 정리 실패는 무시
+      }
     }
   }
 
-  private async writeFile(filePath: string, content: string): Promise<void> {
-    const { promises: fs } = require("fs");
-
+  private async fileExists(filePath: string): Promise<boolean> {
     try {
-      await fs.writeFile(filePath, content);
-    } catch (error: any) {
-      throw new SyncError(
-        `Failed to write file: ${error.message}`,
-        SyncErrorTypes.SYNC_FAILED,
-        { filePath }
-      );
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
     }
   }
 }
