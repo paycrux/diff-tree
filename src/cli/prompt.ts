@@ -2,6 +2,7 @@ import inquirer, { Answers } from "inquirer";
 import { PROMPT_CONFIG, validators } from "./config.js";
 import { FormatType } from "../formatters/types.js";
 import { FileChange } from "../types/index.js";
+import chalk from "chalk";
 
 // 기본 타입 정의
 type CompareMode = "directories" | "commits";
@@ -148,7 +149,9 @@ export const createPrompt = (): PromptFunctions => {
         message: "Select a file to view details or choose an action:",
         choices: [
           ...files.map((file) => ({
-            name: `${file.path} (${file.insertions} insertions, ${file.deletions} deletions)`,
+            name: `${file.path} (${chalk.green(
+              "+" + file.insertions
+            )} / ${chalk.red("-" + file.deletions)})`,
             value: { type: "file", path: file.path },
           })),
           { name: "Back to main menu", value: { type: "back" } },

@@ -1,36 +1,58 @@
 // src/cli/context/index.ts
+import ora, { Ora } from "ora";
 import { GitAnalyzer } from "../../analyzer/git.js";
-import { GitAnalyzerEventEmitter } from "../../events/eventEmitter.js";
 import { DiffFormatter } from "../../formatters/index.js";
-import { Store } from "../../state/store.js";
+import { initialState, Store } from "../../state/store.js";
+import { Action } from "../../state/types.js";
+import { GitDiffError } from "../../types/index.js";
+import chalk from "chalk";
 
 export class CommandContext {
-  public readonly events: GitAnalyzerEventEmitter;
   public readonly store: Store;
+  private spinner: Ora | null = null;
 
   constructor(
     public readonly analyzer: GitAnalyzer,
     public readonly formatter: DiffFormatter
   ) {
-    this.events = new GitAnalyzerEventEmitter();
-    this.store = new Store();
-    this.setupEventListeners();
+    this.store = new Store(initialState);
+
+    this.setupAnalysisHandlers();
   }
 
-  private setupEventListeners() {
-    this.events.on("analysis:start", () => {
-      this.store.setAnalysisState({ isAnalyzing: true, error: null });
+  private setupAnalysisHandlers() {
+    this.store.subscribe((state) => {
+      if (state.analysis.isAnalyzing) {
+        if (this.spinner) this.spinner.stop();
+
+        this.spinner = ora("Analyzing differences...").start();
+      } else {
+        // 분석 완료시 스피너 처리
+        if (this.spinner) {
+          if (state.analysis.error) {
+            this.spinner.fail("Analysis failed");
+          } else if (state.analysis.currentAnalysis) {
+            this.spinner.succeed("Analysis complete");
+          }
+          this.spinner = null;
+        }
+      }
     });
 
-    this.events.on("analysis:complete", (analysis) => {
-      this.store.setAnalysisState({
-        currentAnalysis: analysis,
-        isAnalyzing: false,
-      });
+    // 에러 상태 감지 및 처리
+    this.store.subscribe((state) => {
+      if (state.analysis.error) {
+        console.error(chalk.red(`\nError:`), state.analysis.error.message);
+      }
     });
+  }
 
-    this.events.on("analysis:error", (error) => {
-      this.store.setAnalysisState({ isAnalyzing: false, error });
-    });
+  // 상태 관리 메서드들
+  getState() {
+    return this.store.getState();
+  }
+
+  dispatch(action: Action) {
+    return this.store.dispatch(action);
   }
 }
