@@ -1,96 +1,103 @@
-// src/sync/vscode.ts
-// VSCode 실행 및 제어
-import { exec } from "child_process";
-import { promisify } from "util";
-import {
-  VSCodeOptions,
-  VSCodeProcessResult,
-  SyncError,
-  SyncErrorTypes,
-} from "./types.js";
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'path';
+import { promises as fs } from 'fs';
+import { VSCodeOptions, SyncError, SyncErrorTypes } from './types.js';
+import chalk from 'chalk';
 
 const execAsync = promisify(exec);
 
 export class VSCodeIntegration {
   /**
-   * VSCode를 실행하고 diff 뷰를 엽니다.
+   * ref에서 실제 브랜치/태그와 파일 경로를 분리
    */
-  static async openDiffView(
-    options: VSCodeOptions
-  ): Promise<VSCodeProcessResult> {
+  private static parseRef(ref: string): { gitRef: string; filePath: string } {
+    const [gitRef, ...pathParts] = ref.split(':');
+    return {
+      gitRef,
+      filePath: pathParts.join(':') || '', // 콜론이 포함된 경로를 다시 결합
+    };
+  }
+
+  private static async getFileContent(ref: string, originalPath: string, workspacePath: string): Promise<string> {
+    try {
+      const { gitRef, filePath } = this.parseRef(ref);
+      const targetPath = path.join(filePath, originalPath);
+
+      const { stdout } = await execAsync(`git show "${gitRef}:${targetPath}"`, {
+        cwd: workspacePath,
+      });
+      return stdout;
+    } catch (error: any) {
+      throw new SyncError(`Failed to get file content: ${error.message}`, SyncErrorTypes.VSCODE_LAUNCH_FAILED, {
+        ref,
+        path: originalPath,
+      });
+    }
+  }
+
+  static async openDiffView(options: VSCodeOptions): Promise<{ targetPath: string }> {
     const { fromRef, toRef, filePath, workspacePath } = options;
 
     try {
-      // Git show 명령을 사용하여 각 ref의 파일 내용을 임시 파일로 저장
-      const tempFromPath = `${filePath}.${fromRef}`;
-      const tempToPath = `${filePath}.${toRef}`;
+      console.log(chalk.blue('\nDebug - Getting file contents:'));
+      console.log(`From ref: ${fromRef}`);
+      console.log(`To ref: ${toRef}`);
+      console.log(`File path: ${filePath}`);
+      console.log(`Workspace path: ${workspacePath}`);
 
-      // 각 ref의 파일 내용 추출
-      await execAsync(`git show ${fromRef}:${filePath} > ${tempFromPath}`, {
+      // 1. from 파일 내용 가져오기
+      const fromContent = await this.getFileContent(fromRef, filePath, workspacePath);
+
+      // 2. 대상 경로 계산
+      const { filePath: fromFilePath } = this.parseRef(fromRef);
+      const { filePath: toFilePath } = this.parseRef(toRef);
+      const fromPath = path.join(fromFilePath, filePath);
+      const targetPath = path.join(toFilePath, filePath);
+
+      // 3. 대상 디렉토리 생성
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
+
+      // 4. 파일 생성 & 자동 업데이트
+      // await fs.writeFile(targetPath, fromContent);
+
+      // 5. VSCode로 diff view 열기
+      // fromRef의 파일과 현재 작업 중인 파일을 비교
+      const vscodeCommand = `code --diff "${fromPath}" "${targetPath}"`;
+      console.log(chalk.blue('\nDebug - VSCode command:'));
+      const { stderr } = await execAsync(vscodeCommand, {
         cwd: workspacePath,
       });
-      await execAsync(`git show ${toRef}:${filePath} > ${tempToPath}`, {
-        cwd: workspacePath,
-      });
 
-      // VSCode로 diff 뷰 열기
-      const { stdout, stderr } = await execAsync(
-        `code --wait --diff ${tempFromPath} ${tempToPath}`,
-        { cwd: workspacePath }
-      );
+      if (stderr && !stderr.includes('warning:')) throw new Error(stderr);
 
-      // 임시 파일 정리
-      await Promise.all([
-        execAsync(`rm ${tempFromPath}`),
-        execAsync(`rm ${tempToPath}`),
-      ]);
-
-      if (stderr && !stderr.includes("warning:")) {
-        throw new Error(stderr);
-      }
-
-      // VSCode 프로세스 ID 추출 (실제 구현에서는 더 정교한 방법 필요)
-      const pid = parseInt(stdout.trim(), 10);
-
-      return {
-        success: true,
-        pid: pid || -1,
-      };
+      return { targetPath };
     } catch (error: any) {
-      throw new SyncError(
-        `Failed to open VSCode diff view: ${error.message}`,
-        SyncErrorTypes.VSCODE_LAUNCH_FAILED,
-        { originalError: error }
-      );
+      // 상세한 에러 정보 포함
+      throw new SyncError(`Failed to open VSCode diff view: ${error.message}`, SyncErrorTypes.VSCODE_LAUNCH_FAILED, {
+        originalError: error,
+        command: 'code --wait --diff',
+        fromRef,
+        toRef,
+        filePath,
+      });
     }
   }
 
-  /**
-   * VSCode 프로세스가 실행 중인지 확인합니다.
-   */
-  static async isProcessRunning(pid: number): Promise<boolean> {
+  static async getModifiedContent(targetPath: string): Promise<string> {
     try {
-      const { stdout } = await execAsync(
-        process.platform === "win32"
-          ? `tasklist /FI "PID eq ${pid}"`
-          : `ps -p ${pid}`
-      );
-      return stdout.includes(pid.toString());
-    } catch {
-      return false;
+      return await fs.readFile(targetPath, 'utf8');
+    } catch (error: any) {
+      throw new SyncError(`Failed to read modified content: ${error.message}`, SyncErrorTypes.VSCODE_LAUNCH_FAILED, {
+        file: targetPath,
+      });
     }
   }
 
-  /**
-   * VSCode 프로세스를 종료합니다.
-   */
-  static async killProcess(pid: number): Promise<void> {
+  static async cleanup(): Promise<void> {
     try {
-      await execAsync(
-        process.platform === "win32" ? `taskkill /PID ${pid}` : `kill ${pid}`
-      );
     } catch (error) {
-      console.error(`Failed to kill VSCode process: ${error}`);
+      console.error('Failed to cleanup temp files:', error);
     }
   }
 }
