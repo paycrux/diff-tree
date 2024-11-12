@@ -1,11 +1,11 @@
-import inquirer, { Answers } from "inquirer";
-import { PROMPT_CONFIG, validators } from "./config.js";
-import { FormatType } from "../formatters/types.js";
-import { FileChange } from "../types/index.js";
-import chalk from "chalk";
+import inquirer, { Answers } from 'inquirer';
+import { PROMPT_CONFIG, validators } from './config.js';
+import { FormatType } from '../formatters/types.js';
+import { FileChange } from '../types/index.js';
+import chalk from 'chalk';
 
 // 기본 타입 정의
-type CompareMode = "directories" | "commits";
+type CompareMode = 'directories' | 'commits';
 
 // Prompt 결과 타입들을 명시적으로 정의
 interface ModeSelectionResult extends Answers {
@@ -33,11 +33,11 @@ interface PatternFilterResult extends Answers {
 }
 
 interface ChoiceChangedFileResult extends Answers {
-  action: { type: "file"; path: string } | { type: "back" } | { type: "exit" };
+  action: { type: 'file'; path: string } | { type: 'back' } | { type: 'exit' };
 }
 
 interface SyncActionResult extends Answers {
-  action: "confirm" | "skip" | "next" | "prev" | "list";
+  action: 'confirm' | 'skip' | 'next' | 'prev' | 'list';
 }
 
 // Prompt 함수들의 반환 타입을 명시적으로 정의
@@ -49,28 +49,26 @@ type PromptFunctions = {
   usePatternFilter: () => Promise<PatternFilterResult>;
   choiceChangedFile: (files: FileChange[]) => Promise<ChoiceChangedFileResult>;
   syncActionPrompt: (filePath: string) => Promise<SyncActionResult>;
-  getDirectoryCompareAnswers: () => Promise<
-    CompareDirectoryResult & { fromRef: string; toRef: string }
-  >;
+  getDirectoryCompareAnswers: () => Promise<CompareDirectoryResult & { fromRef: string; toRef: string }>;
 };
 
 export const createPrompt = (): PromptFunctions => {
   const modeSelection = () =>
     inquirer.prompt<ModeSelectionResult>([
       {
-        type: "list",
-        name: "compareMode",
-        message: "Select comparison mode:",
+        type: 'list',
+        name: 'compareMode',
+        message: 'Select comparison mode:',
         choices: [
           {
-            name: "Compare directories",
-            value: "directories",
-            short: "Directories",
+            name: 'Compare directories',
+            value: 'directories',
+            short: 'Directories',
           },
           {
-            name: "Compare commits/branches",
-            value: "commits",
-            short: "Commits/branches",
+            name: 'Compare commits/branches',
+            value: 'commits',
+            short: 'Commits/branches',
           },
         ],
       },
@@ -79,13 +77,13 @@ export const createPrompt = (): PromptFunctions => {
   const formatSelection = () =>
     inquirer.prompt<FormatSelectionResult>([
       {
-        type: "list",
-        name: "format",
-        message: "Select output format:",
+        type: 'list',
+        name: 'format',
+        message: 'Select output format:',
         choices: [
-          { name: "Tree view", value: "tree" as const, short: "Tree" },
-          { name: "Plain text", value: "plain" as const, short: "Plain" },
-          { name: "JSON", value: "json" as const, short: "JSON" },
+          { name: 'Tree view', value: 'tree' as const, short: 'Tree' },
+          { name: 'Plain text', value: 'plain' as const, short: 'Plain' },
+          { name: 'JSON', value: 'json' as const, short: 'JSON' },
         ],
       },
     ]);
@@ -93,15 +91,15 @@ export const createPrompt = (): PromptFunctions => {
   const compareCommit = () =>
     inquirer.prompt<CompareCommitResult>([
       {
-        type: "input",
-        name: "fromRef",
-        message: "Enter the starting reference:",
+        type: 'input',
+        name: 'fromRef',
+        message: 'Enter the starting reference (fromRef):',
         validate: validators.nonEmpty,
       },
       {
-        type: "input",
-        name: "toRef",
-        message: "Enter the ending reference:",
+        type: 'input',
+        name: 'toRef',
+        message: 'Enter the ending reference (toRef):',
         validate: validators.nonEmpty,
       },
     ]);
@@ -109,22 +107,22 @@ export const createPrompt = (): PromptFunctions => {
   const compareDirectory = () =>
     inquirer.prompt<CompareDirectoryResult>([
       {
-        type: "input",
-        name: "baseBranch",
-        message: "Enter the base branch:",
+        type: 'input',
+        name: 'baseBranch',
+        message: 'Enter the base branch:',
         default: PROMPT_CONFIG.defaults.baseBranch,
         validate: validators.nonEmpty,
       },
       {
-        type: "input",
-        name: "fromDir",
-        message: "Enter the first directory path:",
+        type: 'input',
+        name: 'fromDir',
+        message: 'Enter the first directory path:',
         validate: validators.nonEmpty,
       },
       {
-        type: "input",
-        name: "toDir",
-        message: "Enter the second directory path:",
+        type: 'input',
+        name: 'toDir',
+        message: 'Enter the second directory path:',
         validate: validators.nonEmpty,
       },
     ]);
@@ -132,14 +130,14 @@ export const createPrompt = (): PromptFunctions => {
   const usePatternFilter = () =>
     inquirer.prompt<PatternFilterResult>([
       {
-        type: "confirm",
-        name: "usePattern",
-        message: "Do you want to filter files by pattern?",
+        type: 'confirm',
+        name: 'usePattern',
+        message: 'Do you want to filter files by pattern?',
         default: false,
       },
       {
-        type: "input",
-        name: "pattern",
+        type: 'input',
+        name: 'pattern',
         message: 'Enter file pattern (e.g., "*.ts"):',
         when: (answers) => answers.usePattern,
       },
@@ -148,19 +146,17 @@ export const createPrompt = (): PromptFunctions => {
   const choiceChangedFile = (files: FileChange[]) =>
     inquirer.prompt([
       {
-        type: "list",
-        name: "action",
+        type: 'list',
+        name: 'action',
         loop: false,
-        message: "Select a file to view details or choose an action:",
+        message: 'Select a file to view details or choose an action:',
         choices: [
           ...files.map((file) => ({
-            name: `${file.path} (${chalk.green(
-              "+" + file.insertions
-            )} / ${chalk.red("-" + file.deletions)})`,
-            value: { type: "file", path: file.path },
+            name: `${file.path} (${chalk.green('+' + file.insertions)} / ${chalk.red('-' + file.deletions)})`,
+            value: { type: 'file', path: file.path },
           })),
-          { name: "Back to main menu", value: { type: "back" } },
-          { name: "Exit", value: { type: "exit" } },
+          { name: 'Back to main menu', value: { type: 'back' } },
+          { name: 'Exit', value: { type: 'exit' } },
         ],
       },
     ]);
@@ -168,17 +164,15 @@ export const createPrompt = (): PromptFunctions => {
   const syncActionPrompt = (filePath: string) =>
     inquirer.prompt<SyncActionResult>([
       {
-        type: "list",
-        name: "action",
-        message: chalk.bold(
-          `\nCurrent file: ${filePath}\nStatus: Reviewing in VSCode\n\nChoose action:`
-        ),
+        type: 'list',
+        name: 'action',
+        message: chalk.bold(`\nCurrent file: ${filePath}\nStatus: Reviewing in VSCode\n\nChoose action:`),
         choices: [
-          { name: "Confirm sync [Enter]", value: "confirm" },
-          { name: "Skip file [Esc]", value: "skip" },
-          { name: "View next diff [→]", value: "next" },
-          { name: "View previous diff [←]", value: "prev" },
-          { name: "Go to file list", value: "list" },
+          { name: 'Confirm sync [Enter]', value: 'confirm' },
+          { name: 'Skip file [Esc]', value: 'skip' },
+          { name: 'View next diff [→]', value: 'next' },
+          { name: 'View previous diff [←]', value: 'prev' },
+          { name: 'Go to file list', value: 'list' },
         ],
         pageSize: 5,
         loop: false,

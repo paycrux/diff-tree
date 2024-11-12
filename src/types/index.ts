@@ -23,7 +23,7 @@ export interface FileChange {
   /** 파일 경로 */
   path: string;
   /** 변경 유형 */
-  type: "added" | "modified" | "deleted" | "renamed";
+  type: 'added' | 'modified' | 'deleted' | 'renamed';
   /** 추가된 라인 수 */
   insertions: number;
   /** 삭제된 라인 수 */
@@ -82,17 +82,17 @@ export interface DiffAnalysis {
  */
 export const ErrorTypes = {
   /** Git 명령어 실행 실패 */
-  GIT_COMMAND_FAILED: "GIT_COMMAND_FAILED",
+  GIT_COMMAND_FAILED: 'GIT_COMMAND_FAILED',
   /** 유효하지 않은 레퍼런스 */
-  INVALID_REFERENCE: "INVALID_REFERENCE",
+  INVALID_REFERENCE: 'INVALID_REFERENCE',
   /** 저장소 접근 실패 */
-  REPOSITORY_ACCESS_FAILED: "REPOSITORY_ACCESS_FAILED",
+  REPOSITORY_ACCESS_FAILED: 'REPOSITORY_ACCESS_FAILED',
   /** 파일 필터링 패턴 오류 */
-  INVALID_FILTER_PATTERN: "INVALID_FILTER_PATTERN",
+  INVALID_FILTER_PATTERN: 'INVALID_FILTER_PATTERN',
   /** CLI option 오류 **/
-  INVALID_CLI_OPTIONS: "INVALID_CLI_OPTIONS",
+  INVALID_CLI_OPTIONS: 'INVALID_CLI_OPTIONS',
   /** 분석 결과 없음 */
-  NO_ANALYSIS_AVAILABLE: "NO_ANALYSIS_AVAILABLE",
+  NO_ANALYSIS_AVAILABLE: 'NO_ANALYSIS_AVAILABLE',
 } as const;
 
 /**
@@ -113,7 +113,7 @@ export class GitDiffError extends Error {
    */
   constructor(message: string, type: keyof typeof ErrorTypes, details?: any) {
     super(message);
-    this.name = "GitDiffError";
+    this.name = 'GitDiffError';
     this.type = type;
     this.details = details;
   }

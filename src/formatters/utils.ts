@@ -1,30 +1,30 @@
 // src/utils/tree.ts
-import chalk from "chalk";
-import { FileChange } from "../types/index.js";
-import path from "path";
+import chalk from 'chalk';
+import { FileChange } from '../types/index.js';
+import path from 'path';
 
 export interface DirectoryNode {
   path: string;
-  type: "dir" | "file";
+  type: 'dir' | 'file';
   insertions: number;
   deletions: number;
   children?: DirectoryNode[];
-  fileType?: "added" | "modified" | "deleted" | "renamed";
+  fileType?: 'added' | 'modified' | 'deleted' | 'renamed';
 }
 
 export function buildDirectoryTree(changes: FileChange[]): DirectoryNode {
   const root: DirectoryNode = {
-    path: "",
-    type: "dir",
+    path: '',
+    type: 'dir',
     insertions: 0,
     deletions: 0,
     children: [],
   };
 
   changes.forEach((change) => {
-    const pathParts = change.path.split("/");
+    const pathParts = change.path.split('/');
     let currentNode = root;
-    let currentPath = "";
+    let currentPath = '';
 
     pathParts.forEach((part, index) => {
       currentPath = currentPath ? `${currentPath}/${part}` : part;
@@ -35,7 +35,7 @@ export function buildDirectoryTree(changes: FileChange[]): DirectoryNode {
       if (!node) {
         node = {
           path: currentPath,
-          type: isFile ? "file" : "dir",
+          type: isFile ? 'file' : 'dir',
           insertions: isFile ? change.insertions : 0,
           deletions: isFile ? change.deletions : 0,
           ...(isFile ? { fileType: change.type } : { children: [] }),
@@ -53,36 +53,29 @@ export function buildDirectoryTree(changes: FileChange[]): DirectoryNode {
   });
 
   // root의 children이 하나만 있고 그게 디렉토리라면 해당 노드를 반환
-  if (
-    root.children &&
-    root.children.length === 1 &&
-    root.children[0].type === "dir"
-  ) {
+  if (root.children && root.children.length === 1 && root.children[0].type === 'dir') {
     return root.children[0];
   }
 
   return root;
 }
 
-export function formatChangeCount(
-  insertions: number,
-  deletions: number
-): string {
+export function formatChangeCount(insertions: number, deletions: number): string {
   return `[+${insertions} -${deletions}]`;
 }
 
 export function getChangeIcon(type: string): string {
   const icons = {
-    dir: "📁",
-    file: "📄",
-    modified: "📝",
-    deleted: "❌",
-    renamed: "🔄",
-    added: "✨",
-    warning: "🚨",
-    default: "",
+    dir: '📁',
+    file: '📄',
+    modified: '📝',
+    deleted: '❌',
+    renamed: '🔄',
+    added: '✨',
+    warning: '🚨',
+    default: '',
   };
-  return icons[type as keyof typeof icons] || "";
+  return icons[type as keyof typeof icons] || '';
 }
 
 export const colorMap = {

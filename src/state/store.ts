@@ -1,11 +1,6 @@
 // src/state/store.ts
-import { DiffAnalysis } from "../types/index.js";
-import {
-  type AppState,
-  type Subscriber,
-  type MiddleWare,
-  type Action,
-} from "./types.js";
+import { DiffAnalysis } from '../types/index.js';
+import { type AppState, type Subscriber, type MiddleWare, type Action } from './types.js';
 
 export const initialState: AppState = {
   analysis: {
@@ -18,7 +13,7 @@ export const initialState: AppState = {
     selectedMode: null,
     selectedFormat: null,
     selectedPattern: null,
-    currentRoute: "main",
+    currentRoute: 'main',
   },
 };
 
@@ -63,7 +58,7 @@ export class Store {
 
   private reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
-      case "ANALYSIS_START":
+      case 'ANALYSIS_START':
         return {
           ...state,
           analysis: {
@@ -73,7 +68,7 @@ export class Store {
           },
         };
 
-      case "ANALYSIS_COMPLETE":
+      case 'ANALYSIS_COMPLETE':
         return {
           ...state,
           analysis: {
@@ -83,7 +78,7 @@ export class Store {
           },
         };
 
-      case "ANALYSIS_ERROR":
+      case 'ANALYSIS_ERROR':
         return {
           ...state,
           analysis: {
@@ -93,7 +88,7 @@ export class Store {
           },
         };
 
-      case "REFS_UPDATE":
+      case 'REFS_UPDATE':
         return {
           ...state,
           analysis: {
@@ -102,7 +97,7 @@ export class Store {
           },
         };
 
-      case "UI_UPDATE":
+      case 'UI_UPDATE':
         return {
           ...state,
           ui: {
@@ -111,7 +106,7 @@ export class Store {
           },
         };
 
-      case "NAVIGATION_CHANGE":
+      case 'NAVIGATION_CHANGE':
         return {
           ...state,
           ui: {
@@ -129,22 +124,22 @@ export class Store {
 // Example action creators
 export const actionCreators = {
   startAnalysis: () => ({
-    type: "ANALYSIS_START" as const,
+    type: 'ANALYSIS_START' as const,
     payload: null,
   }),
 
   completeAnalysis: (analysis: DiffAnalysis) => ({
-    type: "ANALYSIS_COMPLETE" as const,
+    type: 'ANALYSIS_COMPLETE' as const,
     payload: analysis,
   }),
 
   updateRefs: (refs: { fromRef: string; toRef: string }) => ({
-    type: "REFS_UPDATE" as const,
+    type: 'REFS_UPDATE' as const,
     payload: refs,
   }),
 
   navigateTo: (route: string) => ({
-    type: "NAVIGATION_CHANGE" as const,
+    type: 'NAVIGATION_CHANGE' as const,
     payload: route,
   }),
 };

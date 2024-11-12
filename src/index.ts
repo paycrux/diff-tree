@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 // src/index.ts
-import { CLI } from "./cli/index.js";
-import chalk from "chalk";
+import { CLI } from './cli/index.js';
+import chalk from 'chalk';
 
 async function main() {
   const cli = new CLI();
@@ -10,6 +10,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(chalk.red("Fatal error:"), error);
+  console.error(chalk.red('Fatal error:'), error);
   process.exit(1);
 });
