@@ -1,9 +1,9 @@
-import { DiffAnalysis } from "../types/index.js";
+import { DiffAnalysis } from '../types/index.js';
 
 export enum FormatType {
-  PLAIN = "plain",
-  TREE = "tree",
-  JSON = "json",
+  PLAIN = 'plain',
+  TREE = 'tree',
+  JSON = 'json',
 }
 
 export type FormatterOptions = {

@@ -1,14 +1,8 @@
 // src/analyzer/git.ts
-import { exec } from "child_process";
-import { promisify } from "util";
-import {
-  DiffAnalysis,
-  ErrorTypes,
-  FileChange,
-  GitDiffError,
-  CompareOptions,
-} from "../types/index.js";
-import path from "path";
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { DiffAnalysis, ErrorTypes, FileChange, GitDiffError, CompareOptions } from '../types/index.js';
+import path from 'path';
 
 const execAsync = promisify(exec);
 
@@ -40,7 +34,7 @@ export class GitAnalyzer {
         cwd: this.repoPath,
       });
 
-      if (stderr && !stderr.includes("warning:")) {
+      if (stderr && !stderr.includes('warning:')) {
         throw new GitDiffError(stderr, ErrorTypes.GIT_COMMAND_FAILED, {
           command,
         });
@@ -48,11 +42,10 @@ export class GitAnalyzer {
 
       return stdout.trim();
     } catch (e: any) {
-      throw new GitDiffError(
-        `Git command failed: ${e.message}`,
-        ErrorTypes.GIT_COMMAND_FAILED,
-        { command, originalError: e }
-      );
+      throw new GitDiffError(`Git command failed: ${e.message}`, ErrorTypes.GIT_COMMAND_FAILED, {
+        command,
+        originalError: e,
+      });
     }
   }
 
@@ -79,15 +72,15 @@ export class GitAnalyzer {
    */
   private parseNumstat(numstatOutput: string): FileChange[] {
     return numstatOutput
-      .split("\n")
+      .split('\n')
       .filter((line) => line.trim())
       .map((line) => {
-        const [insertions, deletions, filePath] = line.split("\t");
+        const [insertions, deletions, filePath] = line.split('\t');
 
         // 파일 변경 타입 감지
-        let type: FileChange["type"] = "modified";
-        if (insertions === "0" && deletions !== "0") type = "deleted";
-        else if (insertions !== "0" && deletions === "0") type = "added";
+        let type: FileChange['type'] = 'modified';
+        if (insertions === '0' && deletions !== '0') type = 'deleted';
+        else if (insertions !== '0' && deletions === '0') type = 'added';
 
         return {
           path: filePath,
@@ -112,7 +105,7 @@ export class GitAnalyzer {
       deletions: 0,
     };
 
-    const byFileType: DiffAnalysis["byFileType"] = {};
+    const byFileType: DiffAnalysis['byFileType'] = {};
 
     for (const change of changes) {
       // 전체 통계 업데이트
@@ -120,7 +113,7 @@ export class GitAnalyzer {
       stats.deletions += change.deletions;
 
       // 파일 타입별 통계 업데이트
-      const ext = change.extension || "no-extension";
+      const ext = change.extension || 'no-extension';
       if (!byFileType[ext]) {
         byFileType[ext] = { count: 0, insertions: 0, deletions: 0 };
       }
@@ -143,23 +136,16 @@ export class GitAnalyzer {
     const { fromRef, toRef, filterPattern, includeMergeCommits } = options;
 
     // 레퍼런스 유효성 검사
-    const [isFromValid, isToValid] = await Promise.all([
-      this.isValidRef(fromRef),
-      this.isValidRef(toRef),
-    ]);
+    const [isFromValid, isToValid] = await Promise.all([this.isValidRef(fromRef), this.isValidRef(toRef)]);
 
     if (!isFromValid || !isToValid) {
-      throw new GitDiffError(
-        "Invalid git reference provided",
-        ErrorTypes.INVALID_REFERENCE,
-        { fromRef, toRef }
-      );
+      throw new GitDiffError('Invalid git reference provided', ErrorTypes.INVALID_REFERENCE, { fromRef, toRef });
     }
 
     // diff 명령어 구성
     let diffCommand = `git diff --numstat ${fromRef} ${toRef}`;
     if (!includeMergeCommits) {
-      diffCommand += " --no-merges";
+      diffCommand += ' --no-merges';
     }
 
     // diff 실행 및 결과 파싱
@@ -172,11 +158,7 @@ export class GitAnalyzer {
         const regex = new RegExp(filterPattern);
         changes = changes.filter((change) => regex.test(change.path));
       } catch (error) {
-        throw new GitDiffError(
-          "Invalid filter pattern",
-          ErrorTypes.INVALID_FILTER_PATTERN,
-          { pattern: filterPattern }
-        );
+        throw new GitDiffError('Invalid filter pattern', ErrorTypes.INVALID_FILTER_PATTERN, { pattern: filterPattern });
       }
     }
 
@@ -190,10 +172,7 @@ export class GitAnalyzer {
    * @param {string} toTag - 종료 태그
    * @returns {Promise<DiffAnalysis>} 분석 결과
    */
-  public async analyzeTagRange(
-    fromTag: string,
-    toTag: string
-  ): Promise<DiffAnalysis> {
+  public async analyzeTagRange(fromTag: string, toTag: string): Promise<DiffAnalysis> {
     return this.analyzeDiff({ fromRef: fromTag, toRef: toTag });
   }
 

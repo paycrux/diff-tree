@@ -19,7 +19,10 @@ export class InteractiveCompareCommand implements GitCommand {
   private merger: FileMerger;
   private commitManager: CommitManager;
 
-  constructor(private context: CommandContext, private options: InteractiveCommandOptions) {
+  constructor(
+    private context: CommandContext,
+    private options: InteractiveCommandOptions,
+  ) {
     this.routeManager = new RouteManager(context);
     this.merger = new FileMerger(process.cwd());
     this.commitManager = new CommitManager(process.cwd());

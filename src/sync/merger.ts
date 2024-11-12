@@ -47,7 +47,7 @@ export class FileMerger {
   async syncFile(filePath: string, fromRef: string, toRef: string, modifiedContent?: string): Promise<SyncResult> {
     const { gitRef: toGitRef, filePath: toFilePath } = this.parseRef(toRef);
     console.log(
-      chalk.cyanBright(`toGitRef: ${toGitRef} toFilePath: ${toFilePath}  filePath: ${filePath}  fromRef: ${fromRef}`)
+      chalk.cyanBright(`toGitRef: ${toGitRef} toFilePath: ${toFilePath}  filePath: ${filePath}  fromRef: ${fromRef}`),
     );
     const fullTargetPath = path.join(toFilePath, filePath);
     const fullPath = path.join(this.workspacePath, fullTargetPath);
