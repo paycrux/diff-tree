@@ -1,18 +1,12 @@
 // src/services/diff.service.ts
-import { GitAnalyzer } from '../domain/analyzer/git-analyzer.js';
-import { DiffFormatter } from '../domain/formatter/diff-formatter.js';
 import { ValidationUtils } from '../utils/validation.js';
 import { DiffServiceOptions, DiffResult } from './types.js';
 import { CustomError, ErrorTypes } from '../types/index.js';
+import { IGitAnalyzer } from '../domain/analyzer/types.js';
+import { IFormatter } from '../domain/formatter/types.js';
 
 export class DiffService {
-  private analyzer: GitAnalyzer;
-  private formatter: DiffFormatter;
-
-  constructor(workspacePath?: string) {
-    this.analyzer = new GitAnalyzer(workspacePath);
-    this.formatter = new DiffFormatter();
-  }
+  constructor(private analyzer: IGitAnalyzer, private formatter: IFormatter) {}
 
   /**
    * 두 레퍼런스 간의 차이를 분석하고 포맷팅합니다.
