@@ -99,6 +99,8 @@ export const ErrorTypes = {
   FILE_SYSTEM_ERROR: 'FILE_SYSTEM_ERROR',
 } as const;
 
+export { CustomError } from '../utils/error.js';
+
 /**
  * Git diff 분석기 커스텀 에러 클래스
  * @class GitDiffError
