@@ -7,14 +7,21 @@ import { Action } from '../../state/types.js';
 import { GitDiffError } from '../../types/index.js';
 import chalk from 'chalk';
 
+/**
+ * @deprecated Use DiffService and SyncService from 'src/services' instead.
+ * This context class will be removed in a future version.
+ * The new services provide:
+ * - Better separation of concerns
+ * - Improved error handling
+ * - More consistent interfaces
+ * - Better state management
+ * - Cleaner integration points
+ */
 export class CommandContext {
   public readonly store: Store;
   private spinner: Ora | null = null;
 
-  constructor(
-    public readonly analyzer: GitAnalyzer,
-    public readonly formatter: DiffFormatter,
-  ) {
+  constructor(public readonly analyzer: GitAnalyzer, public readonly formatter: DiffFormatter) {
     this.store = new Store(initialState);
 
     this.setupAnalysisHandlers();

@@ -97,6 +97,12 @@ export const ErrorTypes = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   /** 파일 시스템 오류 */
   FILE_SYSTEM_ERROR: 'FILE_SYSTEM_ERROR',
+  /** 비교 실패 */
+  COMPARISON_FAILED: 'COMPARISON_FAILED',
+  /** 유효하지 않은 파라미터 */
+  INVALID_PARAMETERS: 'INVALID_PARAMETERS',
+  /** FILE SYNC 실패 */
+  SYNC_FAILED: 'SYNC_FAILED',
 } as const;
 
 export { CustomError } from '../utils/error.js';
