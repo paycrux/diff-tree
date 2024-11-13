@@ -103,6 +103,8 @@ export const ErrorTypes = {
   INVALID_PARAMETERS: 'INVALID_PARAMETERS',
   /** FILE SYNC 실패 */
   SYNC_FAILED: 'SYNC_FAILED',
+  /** 옵션 설정 오류 */
+  CONFIG_ERROR: 'CLI OPTION CONFIG_ERROR',
 } as const;
 
 export { CustomError } from '../utils/error.js';

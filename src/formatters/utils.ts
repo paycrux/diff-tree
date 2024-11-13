@@ -3,6 +3,9 @@ import chalk from 'chalk';
 import { FileChange } from '../types/index.js';
 import path from 'path';
 
+/**
+ * @deprecated
+ */
 export interface DirectoryNode {
   path: string;
   type: 'dir' | 'file';

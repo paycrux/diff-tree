@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 // src/index.ts
-import { CLI } from './cli/index.js';
+import { CLIApplication } from './cli/core/app.js';
 import chalk from 'chalk';
 
 async function main() {
-  const cli = new CLI();
+  const cli = new CLIApplication();
   await cli.run();
 }
 
