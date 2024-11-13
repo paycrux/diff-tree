@@ -6,6 +6,15 @@ import { FormatType, type FormatterOptions } from './types.js';
 import { colorMap } from './utils.js';
 import { TreeFormatter } from './service/treeFormatter.js';
 
+/**
+ * @deprecated Use DiffFormatter from 'src/domain/formatter/diff-formatter.ts' instead.
+ * This implementation will be removed in a future version.
+ * New implementation provides:
+ * - Better separation of concerns
+ * - Improved type safety
+ * - More flexible formatting options
+ * - Better utility organization
+ */
 export class DiffFormatter {
   private readonly treeFormatter: TreeFormatter;
 
@@ -14,7 +23,7 @@ export class DiffFormatter {
       format: FormatType.TREE,
       colorize: true,
       showIcons: true,
-    },
+    }
   ) {
     this.treeFormatter = new TreeFormatter(options);
   }

@@ -1,17 +1,35 @@
+// src/domain/formatter/diff-formatter.ts
 import { table } from 'table';
+import { FormatType, FormatterOptions, DirectoryNode } from './types.js';
+import { FormatterUtils, colorMap } from './utils.js';
 import { DiffAnalysis } from '../../types/index.js';
-import { FormatterOptions } from '../types.js';
-import { buildDirectoryTree, colorMap, DirectoryNode, getChangeIcon } from '../utils.js';
 
-/**
- * @deprecated Use DiffFormatter from 'src/domain/formatter/diff-formatter.ts' instead.
- * Tree formatting functionality has been merged into the main DiffFormatter class.
- */
-export class TreeFormatter {
-  constructor(private readonly options: FormatterOptions) {}
+export class DiffFormatter {
+  constructor(
+    private options: FormatterOptions = {
+      format: FormatType.TREE,
+      colorize: true,
+      showIcons: true,
+    }
+  ) {}
 
-  formatTree(analysis: DiffAnalysis): string {
-    const tree = buildDirectoryTree(analysis.changes);
+  public updateOptions(newOptions: Partial<FormatterOptions>) {
+    this.options = { ...this.options, ...newOptions };
+  }
+
+  format(analysis: DiffAnalysis): string {
+    switch (this.options.format) {
+      case FormatType.TREE:
+        return this.formatTree(analysis);
+      case FormatType.JSON:
+        return this.formatJson(analysis);
+      default:
+        return this.formatPlain(analysis);
+    }
+  }
+
+  private formatTree(analysis: DiffAnalysis): string {
+    const tree = FormatterUtils.buildDirectoryTree(analysis.changes);
     const treeData = this.convertTreeToTableData(tree);
     return table(treeData);
   }
@@ -48,10 +66,8 @@ export class TreeFormatter {
 
   private formatPath(node: DirectoryNode & { depth: number }): string {
     const indent = ' '.repeat(node.depth * 2);
-    const icon = this.options.showIcons ? getChangeIcon(node.type) : '';
+    const icon = this.options.showIcons ? FormatterUtils.getChangeIcon(node.type) : '';
     const displayPath = node.path.split('/').pop() || node.path;
-
-    // 파일 타입에 따른 색상 선택
     const colorType = node.type === 'dir' ? 'dir' : node.fileType || 'default';
 
     return `${indent}${icon} ${this.colorize(colorType, displayPath)}`;
@@ -60,7 +76,7 @@ export class TreeFormatter {
   private formatType(node: DirectoryNode): string {
     if (node.type === 'dir') return '';
 
-    const prefixIcon = this.options.showIcons ? getChangeIcon(node?.fileType || 'default') : '';
+    const prefixIcon = this.options.showIcons ? FormatterUtils.getChangeIcon(node?.fileType || 'default') : '';
     return `${prefixIcon} ${this.colorize(node.fileType || 'default', node.fileType || '')}`;
   }
 
@@ -69,7 +85,7 @@ export class TreeFormatter {
     const changes = this.colorizeChanges(node.insertions, node.deletions);
     const warning =
       node.type === 'file' && (node.insertions > WARNING_THRESHOLD || node.deletions > WARNING_THRESHOLD)
-        ? getChangeIcon('warning')
+        ? FormatterUtils.getChangeIcon('warning')
         : '';
     return `${warning} ${changes}`.trim();
   }
@@ -92,5 +108,32 @@ export class TreeFormatter {
     if (!this.options.colorize) return text;
     const colorFn = colorMap[type as keyof typeof colorMap] ?? colorMap.default;
     return colorFn(text);
+  }
+
+  private formatJson(analysis: DiffAnalysis): string {
+    return JSON.stringify(analysis, null, 2);
+  }
+
+  private formatPlain(analysis: DiffAnalysis): string {
+    let output = '';
+
+    // Overall Statistics
+    output += this.colorize('default', '\nOverall Statistics:\n');
+    output += `Files Changed: ${analysis.stats.filesChanged}\n`;
+    output += `Insertions: ${this.colorize('added', analysis.stats.insertions.toString())}\n`;
+    output += `Deletions: ${this.colorize('deleted', analysis.stats.deletions.toString())}\n`;
+
+    // By File Type
+    output += this.colorize('default', '\nBy File Type:\n');
+    const typeData = Object.entries(analysis.byFileType).map(([ext, stats]) => [
+      ext,
+      stats.count,
+      this.colorize('added', stats.insertions.toString()),
+      this.colorize('deleted', stats.deletions.toString()),
+    ]);
+
+    output += table([['Extension', 'Count', 'Insertions', 'Deletions'], ...typeData]);
+
+    return output;
   }
 }
