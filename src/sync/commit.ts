@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { CommitOptions, SyncError, SyncErrorTypes } from './types.js';
+import { SyncError, SyncErrorTypes } from './types.js';
+import { CommitOptions } from '../domain/merger/types.js';
 
 const execAsync = promisify(exec);
 
