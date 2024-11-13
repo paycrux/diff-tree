@@ -3,6 +3,8 @@ import { DiffService, SyncService } from '../../services/index.js';
 import { CompareCommand } from './commands/compare.command.js';
 import { InteractiveCommand } from './commands/interactive.command.js';
 import { ErrorHandler } from './error-handler.js';
+import { GitAnalyzer } from '../../domain/analyzer/git-analyzer.js';
+import { DiffFormatter } from '../../domain/formatter/diff-formatter.js';
 
 export class CLIApplication {
   private program: Command;
@@ -67,7 +69,10 @@ export class CLIApplication {
   }
 
   private createCompareCommand(options: any) {
-    const diffService = new DiffService();
+    const analyzer = new GitAnalyzer();
+    const formatter = new DiffFormatter();
+
+    const diffService = new DiffService(analyzer, formatter);
     const syncService = new SyncService();
 
     if (options.interactive) {

@@ -1,10 +1,10 @@
 // src/domain/formatter/diff-formatter.ts
 import { table } from 'table';
-import { FormatType, FormatterOptions, DirectoryNode } from './types.js';
+import { FormatType, FormatterOptions, DirectoryNode, IFormatter } from './types.js';
 import { FormatterUtils, colorMap } from './utils.js';
 import { DiffAnalysis } from '../../types/index.js';
 
-export class DiffFormatter {
+export class DiffFormatter implements IFormatter {
   constructor(
     private options: FormatterOptions = {
       format: FormatType.TREE,
@@ -13,7 +13,7 @@ export class DiffFormatter {
     }
   ) {}
 
-  public updateOptions(newOptions: Partial<FormatterOptions>) {
+  updateOptions(newOptions: Partial<FormatterOptions>) {
     this.options = { ...this.options, ...newOptions };
   }
 

@@ -15,7 +15,8 @@ export interface FormatterOptions {
 }
 
 export interface IFormatter {
-  format(analysis: DiffAnalysis, options: FormatterOptions): string;
+  format(analysis: DiffAnalysis): string;
+  updateOptions(newOptions: Partial<FormatterOptions>): void;
 }
 
 export interface DirectoryNode {

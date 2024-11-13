@@ -3,8 +3,9 @@ import path from 'path';
 import { GitUtils } from '../../utils/git.js';
 import { ValidationUtils } from '../../utils/validation.js';
 import { DiffAnalysis, FileChange, CompareOptions, ErrorTypes, CustomError } from '../../types/index.js';
+import { IGitAnalyzer } from './types.js';
 
-export class GitAnalyzer {
+export class GitAnalyzer implements IGitAnalyzer {
   constructor(private repoPath: string = process.cwd()) {}
 
   /**
