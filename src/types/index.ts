@@ -93,6 +93,10 @@ export const ErrorTypes = {
   INVALID_CLI_OPTIONS: 'INVALID_CLI_OPTIONS',
   /** 분석 결과 없음 */
   NO_ANALYSIS_AVAILABLE: 'NO_ANALYSIS_AVAILABLE',
+  /** 유효성 검사 오류 */
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  /** 파일 시스템 오류 */
+  FILE_SYSTEM_ERROR: 'FILE_SYSTEM_ERROR',
 } as const;
 
 /**
