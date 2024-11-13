@@ -127,6 +127,8 @@ export class PromptService {
           { name: 'Back to main menu', value: { type: 'back' as const } },
           { name: 'Exit', value: { type: 'exit' as const } },
         ],
+        loop: false,
+        pageSize: 20,
       },
     ]);
 
@@ -146,6 +148,8 @@ export class PromptService {
           { name: 'View previous diff [←]', value: 'prev' },
           { name: 'Go to file list', value: 'list' },
         ],
+        loop: false,
+        pageSize: 5,
       },
     ]);
   }
