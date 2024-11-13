@@ -134,6 +134,19 @@ export class DiffFormatter implements IFormatter {
 
     output += table([['Extension', 'Count', 'Insertions', 'Deletions'], ...typeData]);
 
+    // Changed Files
+    output += this.colorize('default', '\nChanged Files:\n');
+    const fileData = analysis.changes.map((change) => [
+      change.path,
+      this.colorize(change.type, change.type),
+      `${this.colorize('added', `+${change.insertions.toString()}`)}/${this.colorize(
+        'deleted',
+        `-${change.deletions.toString()}`
+      )}`,
+    ]);
+
+    output += table([['Path', 'Type', 'Changes'], ...fileData]);
+
     return output;
   }
 }
