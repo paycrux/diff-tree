@@ -87,7 +87,7 @@ export class CLIApplication {
       filterPattern: options.pattern,
       formatOptions: {
         type: options.format,
-        showIcons: options.icons,
+        showIcons: options.icons ?? true,
         colorize: !process.env.NO_COLOR,
       },
     });

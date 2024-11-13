@@ -2,6 +2,7 @@ import inquirer from 'inquirer';
 import { FormatType } from '../../domain/formatter/types.js';
 import { FileChange } from '../../types/index.js';
 import chalk from 'chalk';
+import { ValidationUtils } from '../../utils/validation.js';
 
 export class PromptService {
   async getCompareOptions() {
@@ -156,10 +157,12 @@ export class PromptService {
 
   private validateNonEmpty(fieldName: string) {
     return (value: string) => {
-      if (!value || value.trim().length === 0) {
-        return `${fieldName} cannot be empty`;
+      try {
+        ValidationUtils.validateNonEmpty(value, fieldName);
+        return true;
+      } catch (error) {
+        return (error as Error).message;
       }
-      return true;
     };
   }
 }

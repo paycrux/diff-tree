@@ -1,7 +1,6 @@
 // src/domain/formatter/utils.ts
 import chalk from 'chalk';
 import { DirectoryNode } from './types.js';
-import path from 'path';
 import { FileChange } from '../../types/index.js';
 
 export const colorMap = {
