@@ -3,17 +3,14 @@ import { DiffService, SyncService } from '../../services/index.js';
 import { CompareCommand } from './commands/compare.command.js';
 import { InteractiveCommand } from './commands/interactive.command.js';
 import { ErrorHandler } from './error-handler.js';
-import { ConfigService } from './config.service.js';
 
 export class CLIApplication {
   private program: Command;
   private errorHandler: ErrorHandler;
-  private config: ConfigService;
 
   constructor() {
     this.program = new Command();
     this.errorHandler = new ErrorHandler();
-    this.config = new ConfigService();
 
     this.setupProgram();
     this.registerCommands();
@@ -21,21 +18,10 @@ export class CLIApplication {
 
   public async run(): Promise<void> {
     try {
-      await this.initialize();
       await this.program.parseAsync(process.argv);
     } catch (error) {
       this.errorHandler.handle(error);
       process.exit(1);
-    }
-  }
-
-  private async initialize(): Promise<void> {
-    // 설정 파일 로드
-    await this.config.load();
-
-    // 기본값 설정
-    if (!process.env.NO_COLOR && this.config.get('colorOutput') === false) {
-      process.env.NO_COLOR = 'true';
     }
   }
 
