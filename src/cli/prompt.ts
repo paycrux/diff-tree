@@ -52,6 +52,15 @@ type PromptFunctions = {
   getDirectoryCompareAnswers: () => Promise<CompareDirectoryResult & { fromRef: string; toRef: string }>;
 };
 
+/**
+ * @deprecated Use PromptService from 'src/cli/core/prompt.service.ts' instead.
+ * This module will be removed in a future version.
+ * The new PromptService provides:
+ * - Better TypeScript integration
+ * - Improved error handling
+ * - More maintainable structure
+ * - Better separation of concerns
+ */
 export const createPrompt = (): PromptFunctions => {
   const modeSelection = () =>
     inquirer.prompt<ModeSelectionResult>([

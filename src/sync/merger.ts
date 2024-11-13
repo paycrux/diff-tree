@@ -9,7 +9,7 @@ import { SyncResult } from '../domain/merger/types.js';
 const execAsync = promisify(exec);
 
 /**
- * @deprecated use domain/merger/file-merger.ts instead
+ * @deprecated use src/domain/merger/file-merger.ts instead
  */
 export class FileMerger {
   constructor(private workspacePath: string) {}
