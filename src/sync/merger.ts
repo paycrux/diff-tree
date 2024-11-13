@@ -2,11 +2,15 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import path from 'path';
-import { SyncError, SyncErrorTypes, SyncResult } from './types.js';
+import { SyncError, SyncErrorTypes } from './types.js';
 import chalk from 'chalk';
+import { SyncResult } from '../domain/merger/types.js';
 
 const execAsync = promisify(exec);
 
+/**
+ * @deprecated use domain/merger/file-merger.ts instead
+ */
 export class FileMerger {
   constructor(private workspacePath: string) {}
 
@@ -47,7 +51,7 @@ export class FileMerger {
   async syncFile(filePath: string, fromRef: string, toRef: string, modifiedContent?: string): Promise<SyncResult> {
     const { gitRef: toGitRef, filePath: toFilePath } = this.parseRef(toRef);
     console.log(
-      chalk.cyanBright(`toGitRef: ${toGitRef} toFilePath: ${toFilePath}  filePath: ${filePath}  fromRef: ${fromRef}`),
+      chalk.cyanBright(`toGitRef: ${toGitRef} toFilePath: ${toFilePath}  filePath: ${filePath}  fromRef: ${fromRef}`)
     );
     const fullTargetPath = path.join(toFilePath, filePath);
     const fullPath = path.join(this.workspacePath, fullTargetPath);
