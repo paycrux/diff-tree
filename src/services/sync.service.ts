@@ -3,7 +3,6 @@ import { FileMerger } from '../domain/merger/file-merger.js';
 import { SyncServiceOptions } from './types.js';
 import { CustomError, ErrorTypes } from '../types/index.js';
 import { ValidationUtils } from '../utils/validation.js';
-import path from 'path';
 
 export class SyncService {
   private merger: FileMerger;

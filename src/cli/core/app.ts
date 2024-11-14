@@ -18,7 +18,7 @@ export class CLIApplication {
     this.registerCommands();
   }
 
-  public async run(): Promise<void> {
+  public async run() {
     try {
       await this.program.parseAsync(process.argv);
     } catch (error) {
@@ -27,7 +27,7 @@ export class CLIApplication {
     }
   }
 
-  private setupProgram(): void {
+  private setupProgram() {
     this.program
       .name('git-diff-tree')
       .description('A tool for analyzing git differences between references')
@@ -46,7 +46,7 @@ export class CLIApplication {
       });
   }
 
-  private registerCommands(): void {
+  private registerCommands() {
     // 기본 비교 명령어
     this.program
       .command('compare')
@@ -57,7 +57,6 @@ export class CLIApplication {
       .option('-t, --to <ref>', 'Ending reference (tag/commit/branch)')
       .option('-p, --pattern <pattern>', 'File pattern to filter (e.g., "*.ts")')
       .option('--format <type>', 'Output format (plain|tree|json)', 'plain')
-      .option('--no-icons', 'Disable icons in tree view')
       .action(async (options) => {
         try {
           const command = this.createCompareCommand(options);
@@ -87,7 +86,6 @@ export class CLIApplication {
       filterPattern: options.pattern,
       formatOptions: {
         type: options.format,
-        showIcons: options.icons ?? true,
         colorize: !process.env.NO_COLOR,
       },
     });

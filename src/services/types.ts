@@ -1,12 +1,11 @@
 // src/services/types.ts
-import { DiffAnalysis, CompareOptions } from '../types/index.js';
+import { DiffAnalysis, CompareOptions, GitRefs } from '../types/index.js';
 import { FormatType } from '../domain/formatter/types.js';
 
 export interface DiffServiceOptions extends CompareOptions {
   formatOptions?: {
     type: FormatType;
     colorize?: boolean;
-    showIcons?: boolean;
   };
 }
 
@@ -15,9 +14,7 @@ export interface DiffResult {
   formatted: string;
 }
 
-export interface SyncServiceOptions {
-  fromRef: string;
-  toRef: string;
+export interface SyncServiceOptions extends GitRefs {
   targetPath: string;
   workspacePath?: string;
 }
