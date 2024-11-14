@@ -2,14 +2,14 @@
 import { table } from 'table';
 import { FormatType, FormatterOptions, DirectoryNode, IFormatter } from './types.js';
 import { FormatterUtils, colorMap } from './utils.js';
-import { DiffAnalysis } from '../../types/index.js';
+import { DiffAnalysis, FileDetails } from '../../types/index.js';
+import chalk from 'chalk';
 
 export class DiffFormatter implements IFormatter {
   constructor(
     private options: FormatterOptions = {
       format: FormatType.TREE,
       colorize: true,
-      showIcons: true,
     }
   ) {}
 
@@ -17,7 +17,7 @@ export class DiffFormatter implements IFormatter {
     this.options = { ...this.options, ...newOptions };
   }
 
-  format(analysis: DiffAnalysis): string {
+  format(analysis: DiffAnalysis) {
     switch (this.options.format) {
       case FormatType.TREE:
         return this.formatTree(analysis);
@@ -26,6 +26,30 @@ export class DiffFormatter implements IFormatter {
       default:
         return this.formatPlain(analysis);
     }
+  }
+
+  formatDetails(details: FileDetails) {
+    let output = '';
+
+    // Header
+    output += chalk.bold(FormatterUtils.getChangeIcon('file'));
+    output += chalk.gray(`Comparing ${details.fromRef} → ${details.toRef}\n\n`);
+
+    // Diff Content
+    const lines = details.diff.split('\n');
+    lines.forEach((line) => {
+      if (line.startsWith('+')) {
+        output += chalk.green(line) + '\n';
+      } else if (line.startsWith('-')) {
+        output += chalk.red(line) + '\n';
+      } else if (line.startsWith('@@')) {
+        output += chalk.cyan(line) + '\n';
+      } else {
+        output += line + '\n';
+      }
+    });
+
+    return output;
   }
 
   private formatTree(analysis: DiffAnalysis): string {
@@ -66,7 +90,7 @@ export class DiffFormatter implements IFormatter {
 
   private formatPath(node: DirectoryNode & { depth: number }): string {
     const indent = ' '.repeat(node.depth * 2);
-    const icon = this.options.showIcons ? FormatterUtils.getChangeIcon(node.type) : '';
+    const icon = FormatterUtils.getChangeIcon(node.type);
     const displayPath = node.path.split('/').pop() || node.path;
     const colorType = node.type === 'dir' ? 'dir' : node.fileType || 'default';
 
@@ -76,7 +100,7 @@ export class DiffFormatter implements IFormatter {
   private formatType(node: DirectoryNode): string {
     if (node.type === 'dir') return '';
 
-    const prefixIcon = this.options.showIcons ? FormatterUtils.getChangeIcon(node?.fileType || 'default') : '';
+    const prefixIcon = FormatterUtils.getChangeIcon(node?.fileType || 'default');
     return `${prefixIcon} ${this.colorize(node.fileType || 'default', node.fileType || '')}`;
   }
 

@@ -1,14 +1,15 @@
 // src/types/index.ts
 
+export interface GitRefs {
+  fromRef: string;
+  toRef: string;
+}
+
 /**
  * Git diff 분석을 위한 옵션 인터페이스
  * @interface CompareOptions
  */
-export interface CompareOptions {
-  /** 비교 시작 레퍼런스 (커밋 해시, 태그, 브랜치명) */
-  fromRef: string;
-  /** 비교 종료 레퍼런스 (커밋 해시, 태그, 브랜치명) */
-  toRef: string;
+export interface CompareOptions extends GitRefs {
   /** 파일 경로 필터링을 위한 정규식 패턴 (예: "*.ts", "src/*") */
   filterPattern?: string;
   /** merge 커밋 포함 여부 */
@@ -36,7 +37,7 @@ export interface FileChange {
  * diff 분석 전체 통계 정보
  * @interface DiffStats
  */
-export interface DiffStats {
+interface DiffStats {
   /** 변경된 총 파일 수 */
   filesChanged: number;
   /** 전체 추가된 라인 수 */
@@ -49,7 +50,7 @@ export interface DiffStats {
  * 파일 타입별 통계 정보
  * @interface TypeStats
  */
-export interface TypeStats {
+interface TypeStats {
   /** 해당 타입의 파일 수 */
   count: number;
   /** 해당 타입의 총 추가 라인 수 */
@@ -75,6 +76,11 @@ export interface DiffAnalysis {
   changes: FileChange[];
   /** 파일 타입별 통계 정보 */
   byFileType: Record<string, TypeStats>;
+}
+
+export interface FileDetails extends GitRefs {
+  path: string;
+  diff: string;
 }
 
 /**
@@ -108,31 +114,3 @@ export const ErrorTypes = {
 } as const;
 
 export { CustomError } from '../utils/error.js';
-
-/**
- * Git diff 분석기 커스텀 에러 클래스
- * @class GitDiffError
- * @extends Error
- */
-export class GitDiffError extends Error {
-  /** 에러 타입 */
-  type: keyof typeof ErrorTypes;
-  /** 에러 세부 정보 */
-  details?: any;
-
-  /**
-   * @param {string} message - 에러 메시지
-   * @param {keyof typeof ErrorTypes} type - 에러 타입
-   * @param {any} [details] - 추가 에러 정보
-   */
-  constructor(message: string, type: keyof typeof ErrorTypes, details?: any) {
-    super(message);
-    this.name = 'GitDiffError';
-    this.type = type;
-    this.details = details;
-  }
-}
-
-export interface GitCommand {
-  execute(): Promise<void>;
-}

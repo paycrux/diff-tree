@@ -1,5 +1,5 @@
 // src/domain/formatter/types.ts
-import { DiffAnalysis } from '../../types/index.js';
+import { DiffAnalysis, FileDetails } from '../../types/index.js';
 
 export enum FormatType {
   PLAIN = 'plain',
@@ -10,12 +10,12 @@ export enum FormatType {
 export interface FormatterOptions {
   format: FormatType;
   colorize?: boolean;
-  showIcons?: boolean;
   maxDepth?: number;
 }
 
 export interface IFormatter {
   format(analysis: DiffAnalysis): string;
+  formatDetails(details: FileDetails): string;
   updateOptions(newOptions: Partial<FormatterOptions>): void;
 }
 

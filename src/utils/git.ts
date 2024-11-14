@@ -36,6 +36,22 @@ export class GitUtils {
   }
 
   /**
+   * 특정 파일의 Git Diff
+   */
+  static async getFileDetails(filePath: string, refs: { fromRef: string; toRef: string }) {
+    try {
+      const diff = await this.executeCommand(`git diff ${refs.fromRef} ${refs.toRef} -- ${filePath}`);
+      return { path: filePath, diff };
+    } catch (error: any) {
+      throw new CustomError(`Failed to get file details: ${error.message}`, ErrorTypes.GIT_COMMAND_FAILED, {
+        filePath,
+        refs,
+        originalError: error,
+      });
+    }
+  }
+
+  /**
    * Git reference가 유효한지 확인합니다.
    */
   static async isValidRef(ref: string, cwd?: string): Promise<boolean> {

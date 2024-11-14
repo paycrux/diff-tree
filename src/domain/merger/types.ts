@@ -1,3 +1,5 @@
+import { GitRefs } from '../../types/index.js';
+
 export interface SyncResult {
   success: boolean;
   error?: Error;
@@ -5,9 +7,7 @@ export interface SyncResult {
   noChanges?: boolean;
 }
 
-export interface CommitOptions {
+export interface CommitOptions extends GitRefs {
   filePath: string;
-  fromRef: string;
-  toRef: string;
   message?: string;
 }

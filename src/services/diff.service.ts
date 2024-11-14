@@ -1,9 +1,10 @@
 // src/services/diff.service.ts
 import { ValidationUtils } from '../utils/validation.js';
 import { DiffServiceOptions, DiffResult } from './types.js';
-import { CustomError, ErrorTypes } from '../types/index.js';
+import { CustomError, ErrorTypes, GitRefs } from '../types/index.js';
 import { IGitAnalyzer } from '../domain/analyzer/types.js';
 import { IFormatter } from '../domain/formatter/types.js';
+import { GitUtils } from '../utils/git.js';
 
 export class DiffService {
   constructor(private analyzer: IGitAnalyzer, private formatter: IFormatter) {}
@@ -21,7 +22,6 @@ export class DiffService {
         this.formatter.updateOptions({
           format: options.formatOptions.type,
           colorize: options.formatOptions.colorize,
-          showIcons: options.formatOptions.showIcons,
         });
       }
 
@@ -36,10 +36,7 @@ export class DiffService {
       // 결과 포맷팅
       const formatted = this.formatter.format(analysis);
 
-      return {
-        analysis,
-        formatted,
-      };
+      return { analysis, formatted };
     } catch (error) {
       if (error instanceof CustomError) throw error;
 
@@ -48,6 +45,16 @@ export class DiffService {
         originalError: error,
       });
     }
+  }
+
+  async viewFileDetails(filePath: string, refs: GitRefs) {
+    const details = await GitUtils.getFileDetails(filePath, refs);
+    return this.formatter.formatDetails({
+      fromRef: refs.fromRef,
+      toRef: refs.toRef,
+      path: details.path,
+      diff: details.diff,
+    });
   }
 
   /**

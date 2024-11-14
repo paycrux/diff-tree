@@ -1,13 +1,12 @@
 // src/cli/core/commands/interactive.command.ts
-import inquirer from 'inquirer';
-import { DiffService, SyncService } from '../../../services/index.js';
-import { PromptService } from '../prompt.service.js';
-import chalk from 'chalk';
-import { FileChange } from '../../../types/index.js';
 import ora from 'ora';
-
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import chalk from 'chalk';
+import { PromptService } from '../prompt.service.js';
+import { DiffService, SyncService } from '../../../services/index.js';
+import { FileChange, GitRefs } from '../../../types/index.js';
+import { FormatType } from '../../../domain/formatter/types.js';
 
 const execAsync = promisify(exec);
 
@@ -17,6 +16,7 @@ export interface InteractiveCommandOptions {
 
 export class InteractiveCommand {
   private promptService: PromptService;
+  private lastFormatOption: { type: FormatType };
 
   constructor(
     private readonly diffService: DiffService,
@@ -24,6 +24,7 @@ export class InteractiveCommand {
     private readonly options: InteractiveCommandOptions
   ) {
     this.promptService = new PromptService();
+    this.lastFormatOption = { type: FormatType.TREE };
   }
 
   async execute(): Promise<void> {
@@ -31,7 +32,18 @@ export class InteractiveCommand {
 
     // 사용자 입력 받기
     const { fromRef, toRef, pattern } = await this.promptService.getCompareOptions();
-    const formatOptions = await this.promptService.getFormatOptions();
+    this.lastFormatOption = await this.promptService.getFormatOptions(); // 저장
+
+    await this.handleMainFlow({ fromRef, toRef, pattern, formatOptions: this.lastFormatOption });
+  }
+
+  private async handleMainFlow(options: {
+    fromRef: string;
+    toRef: string;
+    pattern?: string;
+    formatOptions: { type: FormatType };
+  }): Promise<void> {
+    const { fromRef, toRef, pattern, formatOptions } = options;
 
     // 분석 수행
     const result = await this.diffService.compare({
@@ -47,14 +59,44 @@ export class InteractiveCommand {
     console.log(result.formatted);
 
     // 동기화 옵션이 활성화된 경우
-    if (this.options.sync) {
-      await this.handleSyncWorkflow(result.analysis.changes, { fromRef, toRef });
-    } else {
-      await this.promptService.showFileSelectionPrompt(result.analysis.changes);
+    if (this.options.sync) await this.handleSyncWorkflow(result.analysis.changes, { fromRef, toRef });
+    else await this.handleDetailsFlow(result.analysis.changes, { fromRef, toRef });
+  }
+
+  private async handleDetailsFlow(files: FileChange[], refs: GitRefs, currentPath?: string): Promise<void> {
+    while (true) {
+      if (currentPath) {
+        // 파일 상세 내용 표시
+        console.clear();
+        const output = await this.diffService.viewFileDetails(currentPath, refs);
+        console.log(output);
+        console.log(chalk.dim('\nPress ESC or select "Back to list" to return to file list\n'));
+      }
+
+      // 다음 액션 선택
+      const action = await this.promptService.getShowDetailsPrompt(files, currentPath);
+
+      switch (action.type) {
+        case 'file':
+          currentPath = action.path;
+          break;
+
+        case 'back':
+          console.clear();
+          await this.handleMainFlow({
+            fromRef: refs.fromRef,
+            toRef: refs.toRef,
+            formatOptions: { type: this.lastFormatOption.type },
+          });
+          return;
+
+        case 'exit':
+          return;
+      }
     }
   }
 
-  private async handleSyncWorkflow(changes: FileChange[], refs: { fromRef: string; toRef: string }): Promise<void> {
+  private async handleSyncWorkflow(changes: FileChange[], refs: GitRefs): Promise<void> {
     const spinner = ora();
     let currentIndex = 0;
     const totalFiles = changes.length;
@@ -108,14 +150,7 @@ export class InteractiveCommand {
         spinner.fail('Error processing file');
         console.error(chalk.red('\nError:'), error instanceof Error ? error.message : error);
 
-        const { shouldContinue } = await inquirer.prompt<{ shouldContinue: boolean }>([
-          {
-            type: 'confirm',
-            name: 'shouldContinue',
-            message: 'Do you want to continue with next file?',
-            default: true,
-          },
-        ]);
+        const { shouldContinue } = await this.promptService.getContinuePrompt();
 
         if (!shouldContinue) return;
         currentIndex++;

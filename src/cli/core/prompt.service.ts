@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
 import { FormatType } from '../../domain/formatter/types.js';
-import { FileChange } from '../../types/index.js';
+import { FileChange, GitRefs } from '../../types/index.js';
 import chalk from 'chalk';
 import { ValidationUtils } from '../../utils/validation.js';
 
@@ -25,7 +25,7 @@ export class PromptService {
   }
 
   private async getCommitCompareOptions() {
-    return inquirer.prompt<{ fromRef: string; toRef: string; usePattern: boolean; pattern?: string }>([
+    return inquirer.prompt<GitRefs & { usePattern: boolean; pattern?: string }>([
       {
         type: 'input',
         name: 'fromRef',
@@ -112,22 +112,30 @@ export class PromptService {
     ]);
   }
 
-  async showFileSelectionPrompt(files: FileChange[]) {
+  async getShowDetailsPrompt(files: FileChange[], lastSelectedPath?: string) {
+    const fileChoices = files.map((file) => ({
+      name: `${file.path} (${chalk.green('+' + file.insertions)} / ${chalk.red('-' + file.deletions)})`,
+      value: { type: 'file' as const, path: file.path },
+    }));
+
     const { action } = await inquirer.prompt<{
       action: { type: 'file' | 'back' | 'exit'; path?: string };
     }>([
       {
         type: 'list',
         name: 'action',
-        message: 'Select a file to view details or choose an action:',
+        message: 'Select File to view details:',
         choices: [
-          ...files.map((file) => ({
-            name: `${file.path} (${chalk.green('+' + file.insertions)} / ${chalk.red('-' + file.deletions)})`,
-            value: { type: 'file' as const, path: file.path },
-          })),
-          { name: 'Back to main menu', value: { type: 'back' as const } },
+          new inquirer.Separator(chalk.dim('─'.repeat(50))),
+
+          ...fileChoices,
+
+          new inquirer.Separator(chalk.dim('─'.repeat(50))),
+
+          { name: 'Back to tree view', value: { type: 'back' as const } },
           { name: 'Exit', value: { type: 'exit' as const } },
         ],
+        default: fileChoices.find((f) => f.value.path === lastSelectedPath)?.value,
         loop: false,
         pageSize: 20,
       },
@@ -151,6 +159,17 @@ export class PromptService {
         ],
         loop: false,
         pageSize: 5,
+      },
+    ]);
+  }
+
+  async getContinuePrompt() {
+    return inquirer.prompt<{ shouldContinue: boolean }>([
+      {
+        type: 'confirm',
+        name: 'shouldContinue',
+        message: 'Do you want to continue with next file?',
+        default: true,
       },
     ]);
   }
