@@ -5,7 +5,6 @@ import { FormatType } from '../domain/formatter/types.js';
 export interface DiffServiceOptions extends CompareOptions {
   formatOptions?: {
     type: FormatType;
-    colorize?: boolean;
   };
 }
 

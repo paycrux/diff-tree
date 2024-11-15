@@ -89,10 +89,7 @@ export class PromptService {
   }
 
   async getFormatOptions() {
-    return inquirer.prompt<{
-      type: FormatType;
-      showIcons: boolean;
-    }>([
+    return inquirer.prompt<{ type: FormatType }>([
       {
         type: 'list',
         name: 'type',
@@ -102,12 +99,6 @@ export class PromptService {
           { name: 'Plain text', value: FormatType.PLAIN },
           { name: 'JSON', value: FormatType.JSON },
         ],
-      },
-      {
-        type: 'confirm',
-        name: 'showIcons',
-        message: 'Show icons in output?',
-        default: true,
       },
     ]);
   }

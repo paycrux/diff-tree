@@ -21,7 +21,6 @@ export class DiffService {
       if (options.formatOptions) {
         this.formatter.updateOptions({
           format: options.formatOptions.type,
-          colorize: options.formatOptions.colorize,
         });
       }
 

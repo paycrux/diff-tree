@@ -32,16 +32,12 @@ export class CLIApplication {
       .name('git-diff-tree')
       .description('A tool for analyzing git differences between references')
       .version('1.0.0')
-      .option('--no-color', 'Disable colored output')
       .option('--debug', 'Enable debug mode')
       .hook('preAction', (thisCommand) => {
         // 글로벌 옵션 처리
         const opts = thisCommand.opts();
         if (opts.debug) {
           process.env.DEBUG = 'true';
-        }
-        if (opts.noColor) {
-          process.env.NO_COLOR = 'true';
         }
       });
   }
@@ -86,7 +82,6 @@ export class CLIApplication {
       filterPattern: options.pattern,
       formatOptions: {
         type: options.format,
-        colorize: !process.env.NO_COLOR,
       },
     });
   }

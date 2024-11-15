@@ -89,8 +89,6 @@ git-diff-tree compare -f main -t develop --format json
 | `-t, --to <ref>`          | Ending reference (branch/tag/commit)   |
 | `-p, --pattern <pattern>` | File filtering pattern                 |
 | `--format <type>`         | Output format (tree/plain/json)        |
-| `--no-colors`             | Disable colored output                 |
-| `--no-icons`              | Disable icons in display               |
 
 ## Usage Examples
 

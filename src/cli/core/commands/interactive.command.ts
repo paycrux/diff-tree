@@ -55,10 +55,8 @@ export class InteractiveCommand {
 
     // 결과 출력
     console.clear();
-    console.log(chalk.bold('\nAnalysis Results:'));
     console.log(result.formatted);
 
-    // 동기화 옵션이 활성화된 경우
     if (this.options.sync) await this.handleSyncWorkflow(result.analysis.changes, { fromRef, toRef });
     else await this.handleDetailsFlow(result.analysis.changes, { fromRef, toRef });
   }

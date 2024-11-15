@@ -1,15 +1,14 @@
 // src/domain/formatter/diff-formatter.ts
+import chalk from 'chalk';
 import { table } from 'table';
 import { FormatType, FormatterOptions, DirectoryNode, IFormatter } from './types.js';
 import { FormatterUtils, colorMap } from './utils.js';
 import { DiffAnalysis, FileDetails } from '../../types/index.js';
-import chalk from 'chalk';
 
 export class DiffFormatter implements IFormatter {
   constructor(
     private options: FormatterOptions = {
       format: FormatType.TREE,
-      colorize: true,
     }
   ) {}
 
@@ -129,7 +128,6 @@ export class DiffFormatter implements IFormatter {
   }
 
   private colorize(type: string, text: string): string {
-    if (!this.options.colorize) return text;
     const colorFn = colorMap[type as keyof typeof colorMap] ?? colorMap.default;
     return colorFn(text);
   }
