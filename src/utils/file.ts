@@ -1,10 +1,27 @@
 // src/utils/file.ts
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 import { CustomError } from './error.js';
 import { ErrorTypes } from '../types/index.js';
 
 export class FileUtils {
+  /**
+   * 현재 운영체제가 Windows인지 확인
+   */
+  static isWindows(): boolean {
+    return os.platform() === 'win32';
+  }
+
+  /**
+   * 경로를 플랫폼에 맞게 정규화
+   * Windows에서는 백슬래시를 슬래시로 변환
+   */
+  static normalizePath(pathStr: string): string {
+    // Git은 항상 forward slash를 사용하므로, Windows에서도 forward slash로 통일
+    return pathStr.split(path.sep).join('/');
+  }
+
   /**
    * 파일 존재 여부를 확인합니다.
    */
@@ -98,5 +115,27 @@ export class FileUtils {
         originalError: error,
       });
     }
+  }
+
+  /**
+   *
+   * @example
+   * getFullPath('master:packages/app', 'src/index.ts', '/home/project')
+   * => '/home/project/packages/app/src/index.ts'
+   */
+  static getFullPath({
+    filePath,
+    workspacePath,
+    ref,
+  }: {
+    filePath: string;
+    workspacePath: string;
+    ref: string;
+  }): string {
+    // ref가 dir경로를 포함하는 경우 (예: master:packages/@monorepo/some/dir)
+    const [branch, ...pathParts] = ref.split(':');
+    const refPath = pathParts.join(':');
+
+    return path.normalize(path.join(workspacePath, refPath || '', filePath));
   }
 }

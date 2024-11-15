@@ -64,6 +64,7 @@ export class PromptService {
         type: 'input',
         name: 'baseBranch',
         message: 'Enter the base branch:',
+        // TODO: Get the default branch from current branch
         default: 'master',
         validate: this.validateNonEmpty('Base branch'),
       },

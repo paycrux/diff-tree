@@ -17,3 +17,10 @@ export interface SyncServiceOptions extends GitRefs {
   targetPath: string;
   workspacePath?: string;
 }
+
+export interface VSCodeDiffOptions {
+  fromRef: string;
+  toRef: string;
+  filePath: string;
+  workspacePath: string;
+}

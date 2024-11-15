@@ -7,6 +7,7 @@ import { PromptService } from '../prompt.service.js';
 import { DiffService, SyncService } from '../../../services/index.js';
 import { FileChange, GitRefs } from '../../../types/index.js';
 import { FormatType } from '../../../domain/formatter/types.js';
+import { VSCodeService } from '../../../services/vscode.service.js';
 
 const execAsync = promisify(exec);
 
@@ -16,6 +17,7 @@ export interface InteractiveCommandOptions {
 
 export class InteractiveCommand {
   private promptService: PromptService;
+  private readonly vscodeService: VSCodeService;
   private lastFormatOption: { type: FormatType };
 
   constructor(
@@ -24,12 +26,11 @@ export class InteractiveCommand {
     private readonly options: InteractiveCommandOptions
   ) {
     this.promptService = new PromptService();
+    this.vscodeService = new VSCodeService();
     this.lastFormatOption = { type: FormatType.TREE };
   }
 
   async execute(): Promise<void> {
-    console.clear();
-
     // 사용자 입력 받기
     const { fromRef, toRef, pattern } = await this.promptService.getCompareOptions();
     this.lastFormatOption = await this.promptService.getFormatOptions(); // 저장
@@ -109,7 +110,12 @@ export class InteractiveCommand {
       try {
         // VSCode로 diff 보여주기
         spinner.start('Opening diff view...');
-        await this.openDiffInVSCode(currentFile);
+        await this.vscodeService.openDiff({
+          fromRef: refs.fromRef,
+          toRef: refs.toRef,
+          filePath: currentFile.path,
+          workspacePath: process.cwd(),
+        });
         spinner.succeed('Diff view opened');
 
         // 사용자 액션 받기
@@ -156,11 +162,5 @@ export class InteractiveCommand {
     }
 
     console.log(chalk.green('\nSync workflow completed!'));
-  }
-
-  private async openDiffInVSCode(file: FileChange): Promise<void> {
-    // FIXME: VSCode 통합 로직은 별도 서비스로 분리하는 것이 좋을 듯;;
-    const command = `code --diff "${file.path}"`;
-    await execAsync(command);
   }
 }
