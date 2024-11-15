@@ -9,7 +9,6 @@ export enum FormatType {
 
 export interface FormatterOptions {
   format: FormatType;
-  colorize?: boolean;
   maxDepth?: number;
 }
 
