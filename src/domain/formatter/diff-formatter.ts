@@ -28,27 +28,21 @@ export class DiffFormatter implements IFormatter {
   }
 
   formatDetails(details: FileDetails) {
-    let output = '';
-
-    // Header
-    output += chalk.bold(FormatterUtils.getChangeIcon('file'));
-    output += chalk.gray(`Comparing ${details.fromRef} → ${details.toRef}\n\n`);
+    const header = [
+      chalk.bold(`${FormatterUtils.getChangeIcon('file')} ${details.path}`),
+      chalk.gray(`Comparing ${details.fromRef} → ${details.toRef}`),
+    ].join('\n\n');
 
     // Diff Content
-    const lines = details.diff.split('\n');
-    lines.forEach((line) => {
-      if (line.startsWith('+')) {
-        output += chalk.green(line) + '\n';
-      } else if (line.startsWith('-')) {
-        output += chalk.red(line) + '\n';
-      } else if (line.startsWith('@@')) {
-        output += chalk.cyan(line) + '\n';
-      } else {
-        output += line + '\n';
-      }
-    });
+    const lines = details.diff //
+      .split('\n') //
+      .map((content) => {
+        const formatter = FormatterUtils.LINE_FORMATTERS.find((f) => f.matcher(content));
+        return formatter ? formatter.format(content) : content;
+      })
+      .join('\n');
 
-    return output;
+    return [header, lines].join('\n');
   }
 
   private formatTree(analysis: DiffAnalysis): string {

@@ -124,7 +124,7 @@ export class PromptService {
 
           new inquirer.Separator(chalk.dim('─'.repeat(50))),
 
-          { name: 'Back to tree view', value: { type: 'back' as const } },
+          { name: 'Back to list view', value: { type: 'back' as const } },
           { name: 'Exit', value: { type: 'exit' as const } },
         ],
         default: fileChoices.find((f) => f.value.path === lastSelectedPath)?.value,
@@ -143,10 +143,11 @@ export class PromptService {
         name: 'action',
         message: chalk.bold(`\nCurrent file: ${filePath}\nStatus: Reviewing changes\n\nChoose action:`),
         choices: [
-          { name: 'Confirm sync [Enter]', value: 'confirm' },
-          { name: 'Skip file [Esc]', value: 'skip' },
-          { name: 'View next diff [→]', value: 'next' },
-          { name: 'View previous diff [←]', value: 'prev' },
+          // TODO: short key bindings ['Enter', 'Esc', '→', '←', 'l']
+          { name: 'Confirm sync', value: 'confirm' },
+          { name: 'Skip file', value: 'skip' },
+          { name: 'View next diff', value: 'next' },
+          { name: 'View previous diff', value: 'prev' },
           { name: 'Go to file list', value: 'list' },
         ],
         loop: false,

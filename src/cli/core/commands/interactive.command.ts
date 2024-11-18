@@ -69,7 +69,6 @@ export class InteractiveCommand {
         console.clear();
         const output = await this.diffService.viewFileDetails(currentPath, refs);
         console.log(output);
-        console.log(chalk.dim('\nPress ESC or select "Back to list" to return to file list\n'));
       }
 
       // 다음 액션 선택
