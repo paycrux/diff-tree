@@ -1,0 +1,116 @@
+name: 💡 기능 제안
+description: git-diff-tree CLI에 새로운 기능을 제안합니다
+title: '[Feature]: '
+labels: ['enhancement']
+assignees: ['crux-yunpark']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        새로운 기능을 제안해 주셔서 감사합니다!
+        제안하시는 기능에 대해 최대한 자세히 설명해 주시면 검토에 큰 도움이 됩니다.
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: 🎯 해결하고자 하는 문제
+      description: 이 기능이 필요한 이유나 현재 불편한 점을 설명해주세요
+      placeholder: |
+        예시:
+        - 현재는 branch 간 diff 비교만 가능한데, commit 범위 지정이 필요합니다
+        - diff 결과를 JSON 형식으로 출력하여 다른 도구와 연동하고 싶습니다
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💫 제안하는 기능
+      description: 어떤 기능이 추가되면 좋을지 설명해주세요
+      placeholder: |
+        예시:
+        - commit hash 범위를 지정할 수 있는 --range 옵션 추가
+        - --output-format=json 옵션 지원
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🛠 구현 아이디어
+      description: 구현 방법에 대한 아이디어가 있다면 공유해주세요
+      placeholder: |
+        예시:
+        1. GitAnalyzer 클래스에 commit range 분석 메소드 추가
+        2. DiffFormatter에 JSON 출력 포맷 추가
+        3. CLI 옵션에 새로운 파라미터 추가
+    validations:
+      required: false
+
+  - type: textarea
+    id: command-example
+    attributes:
+      label: 💻 명령어 예시
+      description: 제안하는 기능의 사용 예시를 작성해주세요
+      placeholder: |
+        # 커밋 범위 지정 예시
+        git-diff-tree compare --range abc123..def456
+
+        # JSON 출력 예시
+        git-diff-tree compare -f master -t develop --output-format json > diff.json
+      render: Shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected-output
+    attributes:
+      label: 📋 기대하는 출력 결과
+      description: 기능이 구현되었을 때 어떤 결과가 출력되면 좋을지 예시를 작성해주세요
+      placeholder: |
+        {
+          "stats": {
+            "filesChanged": 3,
+            "insertions": 50,
+            "deletions": 20
+          },
+          "changes": [...]
+        }
+      render: Shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🤔 대안 검토
+      description: 검토해본 다른 해결 방법이 있다면 설명해주세요
+      placeholder: |
+        1. git log --patch 명령어 활용
+        2. 외부 diff 도구 사용
+        3. ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 추가 컨텍스트
+      description: 기능 제안에 도움이 될 만한 추가 정보가 있다면 작성해주세요
+      placeholder: |
+        - 관련 git 문서
+        - 비슷한 기능을 가진 다른 도구들
+        - 실제 사용 시나리오
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 확인사항
+      description: 제출하기 전에 다음 사항들을 확인해주세요
+      options:
+        - label: 이미 제안된 동일한 기능이 없는지 확인했습니다
+          required: true
+        - label: 이 기능이 git-diff-tree의 목적과 부합하는지 검토했습니다
+          required: true
