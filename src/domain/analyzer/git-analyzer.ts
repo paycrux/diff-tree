@@ -59,23 +59,6 @@ export class GitAnalyzer implements IGitAnalyzer {
   }
 
   /**
-   * 여러 커밋에 대한 순차적 diff 분석을 수행합니다.
-   */
-  public async analyzeCommits(commits: string[]): Promise<DiffAnalysis[]> {
-    const analyses: DiffAnalysis[] = [];
-
-    for (let i = 0; i < commits.length - 1; i++) {
-      const analysis = await this.analyzeDiff({
-        fromRef: commits[i],
-        toRef: commits[i + 1],
-      });
-      analyses.push(analysis);
-    }
-
-    return analyses;
-  }
-
-  /**
    * Git diff --numstat 결과를 파싱하여 FileChange 객체로 변환합니다.
    */
   private parseNumstat(numstatOutput: string): FileChange[] {
@@ -103,29 +86,30 @@ export class GitAnalyzer implements IGitAnalyzer {
    * 파일 변경사항 목록으로부터 통계를 생성합니다.
    */
   private generateAnalysis(changes: FileChange[]): DiffAnalysis {
-    const stats = {
-      filesChanged: changes.length,
-      insertions: 0,
-      deletions: 0,
-    };
+    // 기본 통계 계산
+    const stats = changes.reduce(
+      (acc, change) => ({
+        filesChanged: changes.length,
+        insertions: acc.insertions + change.insertions,
+        deletions: acc.deletions + change.deletions,
+      }),
+      { filesChanged: 0, insertions: 0, deletions: 0 }
+    );
 
-    const byFileType: DiffAnalysis['byFileType'] = {};
-
-    for (const change of changes) {
-      // 전체 통계 업데이트
-      stats.insertions += change.insertions;
-      stats.deletions += change.deletions;
-
-      // 파일 타입별 통계 업데이트
+    // 파일 타입별 통계 계산
+    const byFileType = changes.reduce<DiffAnalysis['byFileType']>((acc, change) => {
       const ext = change.extension || 'no-extension';
-      if (!byFileType[ext]) {
-        byFileType[ext] = { count: 0, insertions: 0, deletions: 0 };
-      }
-      byFileType[ext].count++;
-      byFileType[ext].insertions += change.insertions;
-      byFileType[ext].deletions += change.deletions;
-    }
 
-    return { stats, changes, byFileType };
+      return {
+        ...acc,
+        [ext]: {
+          count: (acc[ext]?.count || 0) + 1,
+          insertions: (acc[ext]?.insertions || 0) + change.insertions,
+          deletions: (acc[ext]?.deletions || 0) + change.deletions,
+        },
+      };
+    }, {});
+
+    return { stats, byFileType, changes };
   }
 }

@@ -76,4 +76,22 @@ export class FormatterUtils {
     if (deletions > 0) parts.push(`-${deletions}`);
     return parts.join('/') || '0';
   }
+
+  static LINE_FORMATTERS = [
+    {
+      type: 'addition',
+      matcher: (line: string) => line.startsWith('+'),
+      format: (line: string) => chalk.green(line),
+    },
+    {
+      type: 'deletion',
+      matcher: (line: string) => line.startsWith('-'),
+      format: (line: string) => chalk.red(line),
+    },
+    {
+      type: 'chunk',
+      matcher: (line: string) => line.startsWith('@@'),
+      format: (line: string) => chalk.cyan(line),
+    },
+  ];
 }

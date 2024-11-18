@@ -56,44 +56,6 @@ export class DiffService {
     });
   }
 
-  /**
-   * 여러 커밋들을 순차적으로 비교 분석합니다.
-   */
-  async compareMultiple(commits: string[]): Promise<DiffResult[]> {
-    if (commits.length < 2) {
-      throw new CustomError('At least two commits are required for comparison', ErrorTypes.INVALID_PARAMETERS, {
-        commits,
-      });
-    }
-
-    const results: DiffResult[] = [];
-
-    for (let i = 0; i < commits.length - 1; i++) {
-      const result = await this.compare({
-        fromRef: commits[i],
-        toRef: commits[i + 1],
-      });
-      results.push(result);
-    }
-
-    return results;
-  }
-
-  /**
-   * 태그 범위의 변경사항을 분석합니다.
-   */
-  async compareTagRange(
-    fromTag: string,
-    toTag: string,
-    options: Partial<DiffServiceOptions> = {}
-  ): Promise<DiffResult> {
-    return this.compare({
-      ...options,
-      fromRef: fromTag,
-      toRef: toTag,
-    });
-  }
-
   private validateOptions(options: DiffServiceOptions): void {
     ValidationUtils.validateNonEmpty(options.fromRef, 'fromRef');
     ValidationUtils.validateNonEmpty(options.toRef, 'toRef');
