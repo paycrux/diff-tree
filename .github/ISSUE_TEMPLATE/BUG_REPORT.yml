@@ -1,0 +1,134 @@
+name: 🐛 Bug Report
+description: Report a bug in git-diff-tree CLI
+title: '[Bug]: '
+labels: ['bug']
+assignees: ['crux-yunpark']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible to help us resolve the issue.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 📍 버그 요약
+      description: 어떤 버그가 발생했는지 간단히 설명해주세요
+      placeholder: interactive 모드에서 sync 명령어 실행 시 터미널이 종료됩니다...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 🔖 버전 정보
+      description: 사용 중인 git-diff-tree 버전을 입력해주세요
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: 📦 Node.js 버전
+      description: 사용 중인 Node.js 버전을 입력해주세요
+      placeholder: v18.15.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 💻 운영체제
+      description: 사용 중인 운영체제를 선택해주세요
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - 기타
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: 🔍 실행한 명령어
+      description: 버그가 발생한 정확한 명령어를 입력해주세요
+      placeholder: |
+        git-diff-tree compare -i --sync -f master -t develop
+      render: Shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 🤖 기대한 동작
+      description: 원래 어떻게 동작했어야 하나요?
+      placeholder: diff view가 표시되고 선택한 파일이 동기화되어야 합니다...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: 🤡 실제 동작
+      description: 실제로는 어떻게 동작했나요?
+      placeholder: 에러 메시지 없이 터미널이 종료됩니다...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 재현 방법
+      description: 버그를 재현하기 위한 단계를 설명해주세요
+      value: |
+        1. git repository 초기화...
+        2. 명령어 실행...
+        3. 옵션 선택...
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: 📋 에러 메시지
+      description: 터미널에 표시된 에러 메시지가 있다면 입력해주세요
+      placeholder: 터미널 출력 내용을 여기에 붙여넣으세요...
+      render: Shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: repository-info
+    attributes:
+      label: 📁 Repository 정보
+      description: 문제가 발생한 git repository의 정보를 입력해주세요
+      placeholder: |
+        - Repository 크기:
+        - branch 개수:
+        - 분석 중인 diff 크기:
+    validations:
+      required: false
+
+  - type: textarea
+    id: possible-solution
+    attributes:
+      label: 💡 가능한 해결 방안
+      description: 해결 방안에 대한 아이디어가 있다면 공유해주세요
+      placeholder: 이 문제는 아마도...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 확인사항
+      description: 제출하기 전에 다음 사항들을 확인해주세요
+      options:
+        - label: 이미 보고된 동일한 이슈가 없는지 확인했습니다
+          required: true
+        - label: 최신 버전의 git-diff-tree에서 테스트했습니다
+          required: true
