@@ -57,8 +57,11 @@ pnpm add -g diff-tree
 ### Basic Commands
 
 ```bash
-# Run in interactive mode
+# Run in interactive mode (⭐️ RECOMMEND )
 git-diff-tree compare -i
+
+# Run in interactive sync mode
+git-diff-tree compare -i --sync
 
 # Specify references directly
 git-diff-tree compare -f  -t
